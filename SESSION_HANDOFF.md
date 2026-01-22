@@ -71,6 +71,7 @@
 ## Nia Context IDs
 | Context | ID | Expires |
 |---------|-----|---------|
-| Session handoff (latest) | `5a74b56a-5b00-47a3-9f5e-4e26677449c5` | 2026-01-29 |
+| **Full implementation details** | `4a829c74-d083-4a47-bd99-effdee1c803b` | 2026-01-29 |
+| Session handoff | `5a74b56a-5b00-47a3-9f5e-4e26677449c5` | 2026-01-29 |
 | Previous handoff | `126a7c05-51b5-4101-b2da-c89752d29c59` | 2026-01-29 |
 | Technical specs | `c8ba810a-e6b3-4af2-b6b7-c192d2cb3cd3` | 2026-01-29 |
