@@ -1,40 +1,39 @@
 # Session Handoff Notes
 
-**Last Updated**: 2026-01-21
+**Last Updated**: 2026-01-22
 **Project**: The Sentinel - Leamur.ai Demo
 
 ---
 
-## Status: Planning Complete, Ready for Iteration 1
+## Status: Ready for Iteration 1 Implementation
 
-## Completed This Session
+## Completed This Session (2026-01-22)
 
-1. **PRD.md** - Complete product requirements:
-   - Split-task AI: Gemini 2.5 Flash + GPT-5.2
-   - Hybrid mode (mock default, `?live=true` for real AI)
-   - 4-iteration execution strategy with checkpoints
-   - Paper texture CSS, state management rationale
-   - Choke point fix for AI hand-off
+1. **Verified PRD** - Confirmed deployment target is Netlify (no Vercel references)
 
-2. **gemini_context.md** - AI collaboration decisions log
+2. **Indexed Netlify Resources in Nia**:
+   - Netlify Docs: `0bcff1ea-a368-4ec9-a878-3f312e7a0425`
+   - Netlify Blog: `c6fbdc73-6fb8-474f-8626-8e8eb9fa8748`
+   - Note: `netlify/next-runtime` repo needs GitHub App for indexing
 
-3. **Committed to git** (local, no remote)
+3. **Pushed to GitHub** - All changes committed
 
 ---
 
 ## Next Session: Execute Iteration 1
 
 ### Tasks
-1. Scaffold Next.js 15+ project (`npx create-next-app@latest`)
+1. Scaffold Next.js 15+ project (`npx create-next-app@latest sentinel-demo`)
 2. Install: motion, lucide-react, clsx, tailwind-merge, @google/genai, openai
-3. Configure Tailwind (navy, slate, blue, red)
+3. Configure Tailwind (navy, slate, accent, success, danger, surface, background, paper)
 4. Setup fonts (Inter, JetBrains Mono)
 5. Create `lib/types.ts`
 6. Create `data/invoice.ts`, `data/lease.ts`, `data/logs.ts`, `data/reasoning.ts`
 7. Add paper texture CSS to globals.css
 8. Create `.env.local` with API keys
+9. Create placeholder page.tsx to verify imports
 
-### Checkpoint
+### Checkpoint Criteria
 - `npm run dev` runs without errors
 - Data imports work
 - Env vars load
@@ -48,14 +47,20 @@
 | `PRD.md` | Complete requirements spec |
 | `gemini_context.md` | AI design decisions |
 | `context.md` | Strategic dossier |
-| `.claude/plans/purrfect-chasing-wind.md` | Execution plan |
+| `.claude/plans/humming-stargazing-nebula.md` | Current execution plan |
 
 ---
 
 ## Important Decisions Made
 
-- **AI Strategy**: Split-task (Gemini retrieval → GPT-5.2 reasoning)
+- **AI Strategy**: Split-task (Gemini retrieval -> GPT-5.2 reasoning)
 - **Models**: Gemini 2.5 Flash, GPT-5.2
 - **Default Mode**: Mock (for pitch safety)
+- **Deployment**: Netlify (`npx netlify deploy --prod`)
 - **Paper Texture**: CSS-only (inline SVG noise)
 - **State**: Simple hooks (no Redux)
+
+---
+
+## Nia Context ID
+`126a7c05-51b5-4101-b2da-c89752d29c59` (expires 2026-01-29)
