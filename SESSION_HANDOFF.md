@@ -14,7 +14,7 @@
 2. **Indexed Netlify Resources in Nia**:
    - Netlify Docs: `0bcff1ea-a368-4ec9-a878-3f312e7a0425`
    - Netlify Blog: `c6fbdc73-6fb8-474f-8626-8e8eb9fa8748`
-   - Note: `netlify/next-runtime` repo needs GitHub App for indexing
+   - OpenNext.js Netlify: `opennextjs/opennextjs-netlify` ✅ (was `netlify/next-runtime`)
 
 3. **Pushed to GitHub** - All changes committed
 

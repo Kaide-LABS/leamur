@@ -1,0 +1,39 @@
+{
+  "name": "sentinel-demo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "playwright test",
+    "test:screenshots": "playwright test 'Screenshot Capture'",
+    "test:a11y": "playwright test 'WCAG'"
+  },
+  "dependencies": {
+    "@google/genai": "^1.38.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.562.0",
+    "motion": "^12.28.1",
+    "next": "16.1.4",
+    "openai": "^6.16.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "tailwind-merge": "^3.4.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
+    "@netlify/plugin-nextjs": "^5.15.5",
+    "@playwright/test": "^1.57.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.4",
+    "playwright": "^1.57.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
