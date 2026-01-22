@@ -236,3 +236,35 @@ We will lean into the specific strengths of each model:
 The PRD is otherwise perfect. Ready to execute Iteration 1.
 
 ---
+
+## 2026-01-22 - PRD Technical Audit (Nia Deep Research)
+
+**Topic:** Deprecated packages and outdated model references identified
+
+**Claude (via Nia Deep Research) found:**
+
+### Critical Issues Fixed in PRD
+
+| Issue | Original | Corrected |
+|-------|----------|-----------|
+| Google AI SDK | `@google/generative-ai` | `@google/genai` |
+| Gemini Model | `gemini-3.0-flash` | `gemini-2.5-flash` |
+| Animation Library | `framer-motion` | `motion` |
+| Next.js Version | Next.js 14 | Next.js 15+ |
+
+### Details
+
+1. **@google/generative-ai** reached End of Life on August 31, 2025. The new SDK is `@google/genai` with a different API pattern using `GoogleGenAI` class and `ai.models.generateContent()`.
+
+2. **gemini-3.0-flash** doesn't exist. Current production model is `gemini-2.5-flash`. Preview model is `gemini-3-flash-preview`.
+
+3. **framer-motion** has been rebranded to `motion` package.
+
+4. **Next.js 15/16** is now stable with Turbopack as default bundler.
+
+### GPT-5.2 - CONFIRMED VALID
+Research confirmed GPT-5.2 exists with variants: instant, thinking, pro.
+
+**PRD.md and SESSION_HANDOFF.md updated accordingly.**
+
+---

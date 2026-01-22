@@ -10,7 +10,7 @@
 ## Completed This Session
 
 1. **PRD.md** - Complete product requirements:
-   - Split-task AI: Gemini 3.0 Flash + GPT-5.2
+   - Split-task AI: Gemini 2.5 Flash + GPT-5.2
    - Hybrid mode (mock default, `?live=true` for real AI)
    - 4-iteration execution strategy with checkpoints
    - Paper texture CSS, state management rationale
@@ -25,8 +25,8 @@
 ## Next Session: Execute Iteration 1
 
 ### Tasks
-1. Scaffold Next.js 14 project (`npx create-next-app`)
-2. Install: framer-motion, lucide-react, clsx, tailwind-merge, @google/generative-ai, openai
+1. Scaffold Next.js 15+ project (`npx create-next-app@latest`)
+2. Install: motion, lucide-react, clsx, tailwind-merge, @google/genai, openai
 3. Configure Tailwind (navy, slate, blue, red)
 4. Setup fonts (Inter, JetBrains Mono)
 5. Create `lib/types.ts`
@@ -55,7 +55,7 @@
 ## Important Decisions Made
 
 - **AI Strategy**: Split-task (Gemini retrieval → GPT-5.2 reasoning)
-- **Models**: Gemini 3.0 Flash, GPT-5.2
+- **Models**: Gemini 2.5 Flash, GPT-5.2
 - **Default Mode**: Mock (for pitch safety)
 - **Paper Texture**: CSS-only (inline SVG noise)
 - **State**: Simple hooks (no Redux)

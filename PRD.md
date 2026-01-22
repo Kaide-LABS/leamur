@@ -148,12 +148,12 @@ Step 5: MATCH FOUND: "external facade" explicitly excluded
 
 | Layer | Technology | Rationale |
 |-------|------------|-----------|
-| **Framework** | Next.js 14 (App Router) | Fast, modern, aligns with Leamur's likely stack |
+| **Framework** | Next.js 15+ (App Router) | Fast, modern, aligns with Leamur's likely stack |
 | **Styling** | Tailwind CSS | Enterprise fintech aesthetic, rapid iteration |
-| **Animations** | Framer Motion | Smooth transitions for log stream, highlights |
+| **Animations** | Motion | Smooth transitions for log stream, highlights |
 | **State** | React useState/useReducer | **Intentionally simple**: If Kardos inspects the source code, clean hooks are more impressive than over-engineered Redux boilerplate. Demo code should be readable and demonstrate competence, not complexity. |
 | **Charts** | Recharts or custom SVG | Savings timeline visualization |
-| **AI** | Gemini 3.0 Flash + GPT-5.2 | Split-task: Flash for retrieval, GPT-5.2 for reasoning. Mock fallback for pitch safety. |
+| **AI** | Gemini 2.5 Flash + GPT-5.2 | Split-task: Flash for retrieval, GPT-5.2 for reasoning. Mock fallback for pitch safety. |
 
 ### 4.2 AI Integration Architecture (Split-Task Multi-Agent)
 
@@ -170,7 +170,7 @@ Step 5: MATCH FOUND: "external facade" explicitly excluded
 
 | Model | Role | Task | Why |
 |-------|------|------|-----|
-| **Gemini 3.0 Flash** | "The Reader" | Document ingestion, clause retrieval | Massive context window, sub-second speed, multimodal |
+| **Gemini 2.5 Flash** | "The Reader" | Document ingestion, clause retrieval | Massive context window, sub-second speed, multimodal |
 | **GPT-5.2** | "The Lawyer" | Legal reasoning, Chain of Thought | Superior complex reasoning, precise structured output |
 
 **Pipeline Flow**:
@@ -186,12 +186,11 @@ Invoice + Lease → [Gemini Flash] → Relevant Clauses → [GPT-5.2] → Audit 
 // lib/ai/gemini.ts
 // Input: Full lease document + invoice
 // Output: Structured JSON with relevant clauses + context
-const retrieveClauses = async (lease: string, invoice: Invoice) => {
-  const model = genAI.getGenerativeModel({
-    model: "gemini-3.0-flash",
-    generationConfig: { responseMimeType: "application/json" }
-  });
+import { GoogleGenAI } from '@google/genai';
 
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+
+const retrieveClauses = async (lease: string, invoice: Invoice) => {
   const prompt = `You are a lease document analyst. Given this lease and invoice,
 find ALL clauses relevant to each invoice line item.
 
@@ -221,7 +220,13 @@ ${lease}
 INVOICE LINE ITEMS:
 ${JSON.stringify(invoice.lineItems)}`;
 
-  return model.generateContent(prompt);
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: prompt,
+    config: { responseMimeType: "application/json" }
+  });
+
+  return response;
 };
 ```
 
@@ -612,8 +617,8 @@ const reasoningSteps = [
 **Goal**: Get the empty app running and data ready.
 
 **Phase 1: Foundation**
-- [ ] Next.js 14 project setup (`create-next-app`)
-- [ ] Install dependencies (framer-motion, lucide-react, clsx, tailwind-merge, @google/generative-ai, openai)
+- [ ] Next.js 15+ project setup (`npx create-next-app@latest`)
+- [ ] Install dependencies (motion, lucide-react, clsx, tailwind-merge, @google/genai, openai)
 - [ ] Tailwind configuration with custom colors
 - [ ] Base layout with fonts (Inter, JetBrains Mono)
 - [ ] Global CSS with paper texture classes
