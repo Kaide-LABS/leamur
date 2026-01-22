@@ -62,5 +62,8 @@
 
 ---
 
-## Nia Context ID
-`126a7c05-51b5-4101-b2da-c89752d29c59` (expires 2026-01-29)
+## Nia Context IDs
+| Context | ID | Expires |
+|---------|-----|---------|
+| Session handoff | `126a7c05-51b5-4101-b2da-c89752d29c59` | 2026-01-29 |
+| Technical specs | `c8ba810a-e6b3-4af2-b6b7-c192d2cb3cd3` | 2026-01-29 |
