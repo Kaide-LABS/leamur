@@ -1,48 +1,45 @@
 # Session Handoff Notes
 
-**Last Updated**: 2026-01-22 (End of Day)
+**Last Updated**: 2026-01-23
 **Project**: The Sentinel - Leamur.ai Demo
 
 ---
 
-## Status: Implementation Complete - Ready for Testing/Polish
+## Status: Branding Complete - Ready for Deploy/Testing
 
-## Completed This Session (2026-01-22)
+## Completed This Session (2026-01-23)
 
-1. **Full Next.js 15 Application Implemented**
-   - Scaffolded with `create-next-app@latest`
-   - All components built and working
-   - AI integration configured (Gemini + GPT-5.2)
+1. **Leamur Branding Added**
+   - Added Leamur logo to header (with divider and product name)
+   - Updated subtitle to "Invoice Audit Module"
+   - Added branded footer "Powered by Leamur.ai"
+   - Enhanced loading state with animated logo
 
-2. **Components Created**:
-   - `DocumentStage` - Invoice/Lease viewer with highlights
-   - `AuditPanel` - Results display
-   - `ReasoningPanel` - Animated reasoning disclosure
-   - `DisputeModal` - Action workflow
-   - `SavingsCounter` - Animated counter
-   - `DropZone` - File upload
-   - `LoadingScreen` / `LogStream` - Processing UI
+2. **UI Polish**
+   - Changed section number badges to accent color (was blue-700)
+   - Updated button hover states to use accent colors
+   - Minor CSS refinements
 
-3. **Data & Mock Files**:
-   - `src/data/` - invoice, lease, logs, reasoning, timeline
-   - `demo-files/` - PDF samples
-
-4. **Tests & Screenshots**:
-   - Playwright accessibility tests
-   - Screenshots for all UI states captured
-
-5. **Committed and Pushed** - commit `6e0fa25`
+3. **Committed and Pushed** - commit `1051209`
 
 ---
 
-## Next Session: Polish & Deploy
+## Previous Session Summary (2026-01-22)
+
+- Full Next.js 15 application implemented
+- All components built (DocumentStage, AuditPanel, ReasoningPanel, etc.)
+- Mock data and PDF samples created
+- Playwright accessibility tests added
+
+---
+
+## Next Session: Deploy & Test
 
 ### Tasks
 1. Test live AI mode with real API keys in `.env.local`
-2. Polish animations and transitions
-3. Add more accessibility tests
-4. Deploy preview to Netlify (`npx netlify deploy`)
-5. Test deployed version
+2. Deploy preview to Netlify (`npx netlify deploy`)
+3. Test deployed version on mobile/desktop
+4. Final polish based on testing feedback
 
 ---
 
@@ -53,7 +50,8 @@
 | `PRD.md` | Complete requirements spec |
 | `gemini_context.md` | AI design decisions |
 | `context.md` | Strategic dossier |
-| `.claude/plans/humming-stargazing-nebula.md` | Current execution plan |
+| `.claude/plans/humming-stargazing-nebula.md` | Execution plan |
+| `sentinel-demo/public/leamur-logo.svg` | Company logo |
 
 ---
 
@@ -63,8 +61,7 @@
 - **Models**: Gemini 2.5 Flash, GPT-5.2
 - **Default Mode**: Mock (for pitch safety)
 - **Deployment**: Netlify (`npx netlify deploy --prod`)
-- **Paper Texture**: CSS-only (inline SVG noise)
-- **State**: Simple hooks (no Redux)
+- **Branding**: Leamur logo in header + footer
 
 ---
 
