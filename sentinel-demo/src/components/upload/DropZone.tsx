@@ -158,7 +158,7 @@ export function DropZone({ onFileSelect, onAnalyze, disabled = false }: DropZone
           "w-full py-3 px-6 rounded-lg font-semibold text-sm",
           "transition-colors duration-150",
           selectedFile && !disabled
-            ? "bg-blue-700 text-white hover:bg-blue-800"
+            ? "bg-accent text-white hover:bg-accent-hover"
             : "bg-slate/20 text-slate/50 cursor-not-allowed"
         )}
         whileHover={selectedFile && !disabled ? { scale: 1.02 } : {}}

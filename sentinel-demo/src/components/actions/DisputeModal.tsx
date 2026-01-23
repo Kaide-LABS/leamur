@@ -260,7 +260,7 @@ export function DisputeModal({
                         "px-4 py-2 text-sm font-medium rounded-lg flex items-center gap-2 transition-all min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-white",
                         copied
                           ? "bg-emerald-700 text-white"
-                          : "bg-blue-700 text-white hover:bg-blue-800"
+                          : "bg-accent text-white hover:bg-accent-hover"
                       )}
                     >
                       {copied ? (

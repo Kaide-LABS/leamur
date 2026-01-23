@@ -11,11 +11,12 @@
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jetbrains-mono);
 
-  /* Custom color palette */
+  /* Custom color palette - Leamur Brand */
   --color-navy: #0F172A;
   --color-slate: #475569;
-  --color-accent: #2563EB;        /* blue-600 - darker for WCAG compliance */
-  --color-accent-hover: #1D4ED8;  /* blue-700 */
+  --color-accent: #E85A3C;        /* Leamur coral/orange - primary brand color */
+  --color-accent-hover: #D14A2E;  /* Darker coral for hover states */
+  --color-accent-light: #FFF1EE;  /* Light coral for backgrounds */
   --color-success: #059669;       /* emerald-600 - darker for WCAG compliance */
   --color-success-light: #10B981; /* emerald-500 - for backgrounds only */
   --color-danger: #DC2626;        /* red-600 - darker for WCAG compliance */

@@ -148,15 +148,26 @@ function DemoContent() {
         {/* Header */}
         <header className="mb-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-accent/10">
-                <Shield className="h-8 w-8 text-accent" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-navy">The Sentinel</h1>
-                <p className="text-sm text-slate">
-                  AI-Powered Lease Audit System
-                </p>
+            <div className="flex items-center gap-6">
+              {/* Leamur Logo */}
+              <img
+                src="/leamur-logo.svg"
+                alt="Leamur"
+                className="h-8 w-auto"
+              />
+              {/* Divider */}
+              <div className="h-8 w-px bg-slate/20" />
+              {/* Product Name */}
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-accent/10">
+                  <Shield className="h-6 w-6 text-accent" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-semibold text-navy">The Sentinel</h1>
+                  <p className="text-xs text-slate">
+                    Invoice Audit Module
+                  </p>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -237,7 +248,7 @@ function DemoContent() {
               {/* Document Comparison */}
               <section>
                 <h2 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs">
+                  <span className="w-6 h-6 rounded-full bg-accent text-white flex items-center justify-center text-xs">
                     1
                   </span>
                   Document Comparison
@@ -262,7 +273,7 @@ function DemoContent() {
               <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                   <h2 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs">
+                    <span className="w-6 h-6 rounded-full bg-accent text-white flex items-center justify-center text-xs">
                       2
                     </span>
                     Audit Findings
@@ -277,7 +288,7 @@ function DemoContent() {
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs">
+                    <span className="w-6 h-6 rounded-full bg-accent text-white flex items-center justify-center text-xs">
                       3
                     </span>
                     AI Reasoning
@@ -294,7 +305,7 @@ function DemoContent() {
               <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                   <h2 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs">
+                    <span className="w-6 h-6 rounded-full bg-accent text-white flex items-center justify-center text-xs">
                       4
                     </span>
                     Savings Impact
@@ -306,7 +317,7 @@ function DemoContent() {
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs">
+                    <span className="w-6 h-6 rounded-full bg-accent text-white flex items-center justify-center text-xs">
                       5
                     </span>
                     Historical Performance
@@ -325,7 +336,7 @@ function DemoContent() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={actions.openDisputeModal}
-                    className="px-8 py-3 bg-blue-700 text-white rounded-lg font-semibold text-sm hover:bg-blue-800 transition-colors shadow-lg shadow-blue-700/20"
+                    className="px-8 py-3 bg-accent text-white rounded-lg font-semibold text-sm hover:bg-accent-hover transition-colors shadow-lg shadow-accent/20"
                   >
                     Generate Dispute Letter
                   </motion.button>
@@ -335,6 +346,26 @@ function DemoContent() {
           )}
         </AnimatePresence>
       </div>
+      {/* Footer */}
+      <footer className="mt-16 border-t border-slate/10 py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <div className="flex items-center gap-3">
+              <img
+                src="/leamur-logo.svg"
+                alt="Leamur"
+                className="h-6 w-auto opacity-60"
+              />
+              <span className="text-xs text-slate/60">
+                Powered by Leamur.ai
+              </span>
+            </div>
+            <p className="text-xs text-slate/50">
+              The AI-powered Operating System for commercial tenants
+            </p>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
@@ -344,8 +375,13 @@ export default function Home() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <div className="text-slate">Loading...</div>
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+          <img
+            src="/leamur-logo.svg"
+            alt="Leamur"
+            className="h-10 w-auto animate-pulse"
+          />
+          <div className="text-slate text-sm">Loading...</div>
         </div>
       }
     >

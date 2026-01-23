@@ -76,7 +76,7 @@ export function AnomalyAlert({
                     {onViewDetails && (
                       <button
                         onClick={onViewDetails}
-                        className="inline-flex items-center gap-1 text-xs font-medium text-blue-700 hover:text-blue-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 rounded"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:text-accent-hover transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 rounded"
                       >
                         View Details
                         <ArrowRight className="h-3 w-3" />
