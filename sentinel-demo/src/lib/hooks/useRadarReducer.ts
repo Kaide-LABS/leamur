@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer, useCallback } from "react";
+import { useReducer, useCallback, useMemo } from "react";
 import type { RadarState, RadarAction, PortfolioAnalysis } from "@/lib/types-radar";
 
 const initialState: RadarState = {
@@ -124,9 +124,9 @@ export function useRadarReducer() {
     dispatch({ type: "RESET" });
   }, []);
 
-  return {
-    state,
-    actions: {
+  // Memoize actions object to prevent infinite loops in useEffect dependencies
+  const actions = useMemo(
+    () => ({
       uploadFiles,
       removeFile,
       startAnalysis,
@@ -136,6 +136,22 @@ export function useRadarReducer() {
       setHighlightedInsight,
       toggleReasoning,
       reset,
-    },
+    }),
+    [
+      uploadFiles,
+      removeFile,
+      startAnalysis,
+      updateLoadingStatus,
+      completeAnalysis,
+      setHighlightedLease,
+      setHighlightedInsight,
+      toggleReasoning,
+      reset,
+    ]
+  );
+
+  return {
+    state,
+    actions,
   };
 }

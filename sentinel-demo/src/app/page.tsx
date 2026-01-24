@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { RefreshCw, Radar } from "lucide-react";
 
@@ -12,10 +13,14 @@ import { MultiDropZone } from "@/components/upload/MultiDropZone";
 import { PortfolioLoadingScreen } from "@/components/processing/PortfolioLoadingScreen";
 import { PortfolioDashboard } from "@/components/portfolio/PortfolioDashboard";
 
-// Data
+// Data & Types
 import { mockPortfolioAnalysis } from "@/data/portfolioMock";
+import type { PortfolioAnalysis } from "@/lib/types-radar";
 
 function RadarContent() {
+  const searchParams = useSearchParams();
+  const isLiveMode = searchParams.get("live") === "true";
+
   const { state, actions } = useRadarReducer();
   const isCancelledRef = useRef(false);
   const isAnalyzingRef = useRef(false);
@@ -28,11 +33,8 @@ function RadarContent() {
     [actions]
   );
 
-  // Play analysis sequence
-  const playAnalysisSequence = useCallback(async () => {
-    isCancelledRef.current = false;
-
-    // Simulate processing phases with status updates
+  // Play analysis sequence - mock mode with simulated phases
+  const playMockSequence = useCallback(async (): Promise<PortfolioAnalysis | null> => {
     const phases = [
       { status: "Parsing lease documents...", delay: 1000 },
       { status: "Extracting key clauses...", delay: 1200 },
@@ -43,18 +45,85 @@ function RadarContent() {
     ];
 
     for (const phase of phases) {
-      if (isCancelledRef.current) return;
+      if (isCancelledRef.current) return null;
       actions.updateLoadingStatus(phase.status);
       await new Promise((r) => setTimeout(r, phase.delay));
     }
 
-    // Complete with mock data
-    if (!isCancelledRef.current) {
-      actions.completeAnalysis(mockPortfolioAnalysis);
+    return mockPortfolioAnalysis;
+  }, [actions]);
+
+  // Play analysis sequence - live mode with real API call
+  const playLiveSequence = useCallback(async () => {
+    actions.updateLoadingStatus("Uploading lease documents...");
+
+    // Create FormData with files
+    const formData = new FormData();
+    for (const file of state.selectedFiles) {
+      formData.append("files", file);
+    }
+
+    actions.updateLoadingStatus("Extracting text from PDFs...");
+
+    // Call the API
+    const response = await fetch("/api/analyze-portfolio", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    actions.updateLoadingStatus("Analyzing with Gemini AI...");
+
+    const analysis = await response.json();
+
+    // Check if API fell back to mock data
+    if (analysis._isMockFallback) {
+      console.error("[RadarContent] API fell back to mock data. Error:", analysis._error);
+    } else {
+      console.log("[RadarContent] Got real Gemini analysis");
+    }
+
+    return analysis as PortfolioAnalysis;
+  }, [actions, state.selectedFiles]);
+
+  // Main analysis sequence
+  const playAnalysisSequence = useCallback(async () => {
+    isCancelledRef.current = false;
+
+    // Read live mode directly from URL to avoid stale closure issues
+    const urlParams = new URLSearchParams(window.location.search);
+    const isLive = urlParams.get("live") === "true";
+
+    console.log("[RadarContent] isLive (from URL):", isLive);
+
+    try {
+      let analysis: PortfolioAnalysis | null;
+
+      if (isLive) {
+        console.log("[RadarContent] Live mode - calling API");
+        analysis = await playLiveSequence();
+      } else {
+        console.log("[RadarContent] Mock mode - using simulated data");
+        analysis = await playMockSequence();
+      }
+
+      // Complete with analysis data (if not cancelled)
+      if (!isCancelledRef.current && analysis) {
+        actions.completeAnalysis(analysis);
+      }
+    } catch (error) {
+      console.error("[RadarContent] Analysis failed:", error);
+      // Fallback to mock data on error
+      if (!isCancelledRef.current) {
+        actions.completeAnalysis(mockPortfolioAnalysis);
+      }
     }
 
     isAnalyzingRef.current = false;
-  }, [actions]);
+  }, [actions, playLiveSequence, playMockSequence]);
 
   // Handle analyze button with debouncing
   const handleAnalyze = useCallback(() => {
