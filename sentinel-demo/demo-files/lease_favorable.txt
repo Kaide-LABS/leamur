@@ -1,0 +1,92 @@
+LEASE OF WHOLE (COMMERCIAL) - TENANT BIASED
+DATE: 24th January 2026
+PARTIES:
+BISHOPSGATE TOWER NOMINEE LTD ("the Landlord").
+NEXUS INNOVATIONS PLC ("the Tenant").
+
+HM LAND REGISTRY PRESCRIBED CLAUSES
+LR1. Date: 24th January 2026
+LR2. Title: LN555444
+LR3. Parties: Bishopsgate Tower Nominee Ltd / Nexus Innovations Plc
+LR4. Property: Unit 5A, 22 Bishopsgate, London.
+LR5. Prescribed statements: None.
+LR6. Term: 10 years.
+LR7. Premium: None.
+LR8. Prohibitions: None.
+
+THIS LEASE is made on the date stated in the Prescribed Clauses BETWEEN the Landlord and the Tenant.
+
+1. DEFINITIONS AND INTERPRETATION
+1.1 Definitions
+"Annual Rent": £350,000 per annum (exclusive of VAT).
+"Group Company": A company that is a member of the same group as the Tenant within the meaning of section 42 of the 1954 Act.
+"Pandemic Event": An epidemic, pandemic, or disease outbreak (including COVID-19 and variants) resulting in government-mandated restrictions preventing the Tenant from legally or commercially operating from the Property.
+"Uninsured Risks": Any risk expressly excluded from the Landlord's insurance policy or where insurance is not available at commercially reasonable rates.
+
+2. DEMISE AND RENT
+2.1 The Landlord demises the Property to the Tenant for the Term yielding and paying:
+(a) The Annual Rent (subject to the Rent Free Period).
+(b) The Service Charge.
+2.2 Rent Free Period: The Tenant shall not be required to pay the Annual Rent for the first six (6) months of the Term.
+
+3. TENANT’S COVENANTS
+3.1 Repair
+To keep the interior of the Property in good repair.
+Proviso: The Tenant shall not be liable for:
+(a) Damage caused by Fair Wear and Tear.
+(b) Damage caused by Insured Risks or Uninsured Risks.
+(c) Latent or inherent defects in the design or construction of the Building.
+(d) Damage caused by the Landlord's failure to maintain the structure.
+
+3.2 Alterations
+(a) The Tenant may make internal non-structural alterations (including the installation of demountable partitioning) without the need for Landlord’s consent, subject only to notifying the Landlord.
+(b) The Tenant need not remove lawful alterations at the end of the Term unless reasonably requested by the Landlord in writing at least 6 months prior to expiry.
+
+3.3 Alienation
+(a) The Tenant may share occupation with a Group Company without consent.
+(b) The Tenant may underlet the whole or part of the Property at the open market rent prevailing at the time of the underlease.
+(c) On an assignment to a company of good financial standing (determined reasonably), no AGA shall be required.
+
+4. LANDLORD’S COVENANTS AND SERVICE CHARGE
+4.1 Service Charge Exclusions
+Notwithstanding any other provision, the Service Costs shall exclude:
+(a) Any capital expenditure on the structure, fabric, or plant of the Building (including replacement of lifts or boilers).
+(b) Costs relating to unlet units in the Building.
+(c) Marketing or promotional costs for the Building.
+(d) Works that constitute an improvement or modernisation.
+(e) Costs associated with the enforcement of covenants against other tenants.
+
+4.2 Fixed Administration Fee
+The Management Fee payable by the Tenant shall be a fixed sum of £2,000 per annum, linked only to the Retail Prices Index (RPI) compounded annually.
+
+5. BREAK CLAUSES (MUTUAL)
+5.1 Tenant’s Break Options
+The Tenant may terminate this Lease on:
+(a) The Third Anniversary of the Term Commencement Date; or
+(b) The Fifth Anniversary of the Term Commencement Date;
+by serving not less than three (3) months' written notice.
+5.2 Conditions
+The only condition for the effective exercise of the Tenant's break is the payment of the Principal Rent (but not service charge or insurance rent) due up to the Break Date.
+
+6. PANDEMIC AND SUSPENSION CLAUSE
+6.1 Rent Suspension
+If a Pandemic Event occurs such that the Tenant is unable to access or legally operate its business from the Property:
+(a) The Annual Rent and Service Charge shall be suspended and cease to be payable for the duration of the Pandemic Event; or
+(b) If the closure is partial, the Rent shall be reduced by a fair proportion.
+6.2 Termination
+If a Pandemic Event prevents occupation for a continuous period of 6 months, either party may terminate this Lease on immediate notice.
+
+7. UNINSURED RISKS
+7.1 If the Property is damaged by an Uninsured Risk, the Landlord must elect within 3 months whether to reinstate at its own cost. If the Landlord does not elect to reinstate, the Tenant may terminate the Lease immediately.
+
+8. RENT REVIEW
+8.1 Mechanism
+The Rent shall be reviewed on the 5th Anniversary.
+8.2 Cap and Collar
+The reviewed rent shall be the Open Market Rent but shall in no event be less than the passing rent nor more than the passing rent increased by 3% per annum compounded.
+
+EXECUTED AS A DEED.
+SIGNED by BISHOPSGATE TOWER NOMINEE LTD:
+__________________________ (Director)
+SIGNED by NEXUS INNOVATIONS PLC:
+__________________________ (Director)

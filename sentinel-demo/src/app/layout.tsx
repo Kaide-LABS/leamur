@@ -13,8 +13,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The Sentinel | Leamur.ai Demo",
-  description: "AI-powered commercial lease auditor - Never miss a clause, never overpay.",
+  title: "Sentinel Radar | Leamur.ai",
+  description: "Portfolio Intelligence - Analyze multiple leases to discover variances, risks, and savings opportunities.",
 };
 
 export default function RootLayout({

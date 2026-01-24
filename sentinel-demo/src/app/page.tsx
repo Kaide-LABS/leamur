@@ -2,64 +2,44 @@
 
 import { useRef, useEffect, useCallback, Suspense } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { RefreshCw, Zap, Shield } from "lucide-react";
+import { RefreshCw, Radar } from "lucide-react";
 
 // Hooks
-import { useDemoReducer } from "@/lib/hooks/useDemoReducer";
-import { useAIMode } from "@/lib/hooks/useAIMode";
+import { useRadarReducer } from "@/lib/hooks/useRadarReducer";
 
 // Components
-import { DropZone } from "@/components/upload/DropZone";
-import { LoadingScreen } from "@/components/processing/LoadingScreen";
-import { DocumentStage } from "@/components/document/DocumentStage";
-import { InvoiceView } from "@/components/document/InvoiceView";
-import { LeaseView } from "@/components/document/LeaseView";
-import { AuditPanel } from "@/components/audit/AuditPanel";
-import { AnomalyAlert } from "@/components/audit/AnomalyAlert";
-import { ReasoningPanel } from "@/components/audit/ReasoningPanel";
-import { SavingsCounter } from "@/components/dashboard/SavingsCounter";
-import { SavingsTimeline } from "@/components/dashboard/SavingsTimeline";
-import { DisputeModal } from "@/components/actions/DisputeModal";
+import { MultiDropZone } from "@/components/upload/MultiDropZone";
+import { PortfolioLoadingScreen } from "@/components/processing/PortfolioLoadingScreen";
+import { PortfolioDashboard } from "@/components/portfolio/PortfolioDashboard";
 
 // Data
-import { mockInvoice } from "@/data/invoice";
-import { mockLeaseClause } from "@/data/lease";
-import { mockLogs } from "@/data/logs";
-import { mockTimelineData } from "@/data/timeline";
+import { mockPortfolioAnalysis } from "@/data/portfolioMock";
 
-import type { AuditResult } from "@/lib/types";
-
-function DemoContent() {
-  const aiMode = useAIMode();
-  const { state, actions } = useDemoReducer(aiMode);
+function RadarContent() {
+  const { state, actions } = useRadarReducer();
   const isCancelledRef = useRef(false);
   const isAnalyzingRef = useRef(false);
-  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Handle file selection
-  const handleFileSelect = useCallback(
-    (file: File | null) => {
-      if (file) {
-        actions.uploadFile(file);
-      }
+  const handleFilesChange = useCallback(
+    (files: File[]) => {
+      actions.uploadFiles(files);
     },
     [actions]
   );
 
-  // Play log sequence with cancellation support
-  const playLogSequence = useCallback(async () => {
+  // Play analysis sequence
+  const playAnalysisSequence = useCallback(async () => {
     isCancelledRef.current = false;
-
-    // Create new AbortController for this request
-    abortControllerRef.current = new AbortController();
 
     // Simulate processing phases with status updates
     const phases = [
-      { status: "Processing invoice...", delay: 800 },
-      { status: "Extracting line items...", delay: 1000 },
-      { status: "Querying lease documents...", delay: 1200 },
-      { status: "Analyzing against exclusion clauses...", delay: 1500 },
-      { status: "Finalizing results...", delay: 800 },
+      { status: "Parsing lease documents...", delay: 1000 },
+      { status: "Extracting key clauses...", delay: 1200 },
+      { status: "Comparing across portfolio...", delay: 1500 },
+      { status: "Identifying risk variances...", delay: 1200 },
+      { status: "Quantifying exposure...", delay: 1000 },
+      { status: "Generating recommendations...", delay: 800 },
     ];
 
     for (const phase of phases) {
@@ -68,35 +48,13 @@ function DemoContent() {
       await new Promise((r) => setTimeout(r, phase.delay));
     }
 
-    // After phases complete, call API
+    // Complete with mock data
     if (!isCancelledRef.current) {
-      try {
-        const response = await fetch("/api/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mode: aiMode }),
-          signal: abortControllerRef.current.signal,
-        });
-        const result: AuditResult = await response.json();
-        if (!isCancelledRef.current) {
-          actions.completeAnalysis(result);
-        }
-      } catch (error) {
-        // Ignore AbortError - expected when request is cancelled
-        if (error instanceof Error && error.name === "AbortError") {
-          return;
-        }
-        console.error("Analysis failed:", error);
-        // Import and use mock data as fallback
-        const { mockAuditResult } = await import("@/data/reasoning");
-        if (!isCancelledRef.current) {
-          actions.completeAnalysis(mockAuditResult);
-        }
-      }
+      actions.completeAnalysis(mockPortfolioAnalysis);
     }
-    // Reset analyzing flag when complete
+
     isAnalyzingRef.current = false;
-  }, [actions, aiMode]);
+  }, [actions]);
 
   // Handle analyze button with debouncing
   const handleAnalyze = useCallback(() => {
@@ -105,45 +63,22 @@ function DemoContent() {
     actions.startAnalysis();
   }, [actions]);
 
-  // Handle reset - abort any in-flight requests
+  // Handle reset
   const handleReset = useCallback(() => {
-    // Abort any pending API request
-    abortControllerRef.current?.abort();
     isCancelledRef.current = true;
     isAnalyzingRef.current = false;
     actions.reset();
   }, [actions]);
 
-  // Start log playback when entering PROCESSING state
+  // Start analysis sequence when entering PROCESSING state
   useEffect(() => {
     if (state.appState === "PROCESSING") {
-      playLogSequence();
+      playAnalysisSequence();
     }
-  }, [state.appState, playLogSequence]);
+  }, [state.appState, playAnalysisSequence]);
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Anomaly Alert */}
-      <AnomalyAlert
-        isVisible={state.isAnomalyAlertVisible}
-        flaggedItem={state.auditResult?.flaggedItem ?? null}
-        clause={state.auditResult?.clause ?? null}
-        savings={state.auditResult?.savings ?? 0}
-        onDismiss={actions.dismissAnomalyAlert}
-        onViewDetails={actions.dismissAnomalyAlert}
-      />
-
-      {/* Dispute Modal */}
-      {state.auditResult?.flaggedItem && state.auditResult?.clause && (
-        <DisputeModal
-          isOpen={state.isDisputeModalOpen}
-          onClose={actions.closeDisputeModal}
-          invoice={mockInvoice}
-          flaggedItem={state.auditResult.flaggedItem}
-          clause={state.auditResult.clause}
-        />
-      )}
-
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <header className="mb-8">
@@ -160,22 +95,17 @@ function DemoContent() {
               {/* Product Name */}
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-accent/10">
-                  <Shield className="h-6 w-6 text-accent" />
+                  <Radar className="h-6 w-6 text-accent" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-semibold text-navy">The Sentinel</h1>
-                  <p className="text-xs text-slate">
-                    Invoice Audit Module
-                  </p>
+                  <h1 className="text-xl font-semibold text-navy">
+                    Sentinel Radar
+                  </h1>
+                  <p className="text-xs text-slate">Portfolio Intelligence</p>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              {/* Mode Indicator */}
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate/10 text-xs font-medium text-slate">
-                <Zap className="h-3 w-3" />
-                {aiMode === "live" ? "Live AI" : "Demo Mode"}
-              </div>
               {/* Reset Button (only in RESULTS) */}
               {state.appState === "RESULTS" && (
                 <motion.button
@@ -194,7 +124,7 @@ function DemoContent() {
 
         {/* Main Content - State-based Rendering */}
         <AnimatePresence mode="wait">
-          {/* IDLE State - Show DropZone */}
+          {/* IDLE State - Show MultiDropZone */}
           {state.appState === "IDLE" && (
             <motion.div
               key="idle"
@@ -204,24 +134,26 @@ function DemoContent() {
               transition={{ duration: 0.3 }}
               className="flex items-center justify-center min-h-[60vh]"
             >
-              <div className="w-full max-w-md">
+              <div className="w-full max-w-lg">
                 <div className="text-center mb-6">
                   <h2 className="text-xl font-semibold text-navy mb-2">
-                    Upload Invoice for Analysis
+                    Analyze Your Lease Portfolio
                   </h2>
                   <p className="text-sm text-slate">
-                    Drop a service charge invoice to begin the audit process
+                    Upload 3 lease documents to discover variances, risks, and
+                    savings opportunities across your portfolio
                   </p>
                 </div>
-                <DropZone
-                  onFileSelect={handleFileSelect}
+                <MultiDropZone
+                  onFilesChange={handleFilesChange}
                   onAnalyze={handleAnalyze}
+                  maxFiles={3}
                 />
               </div>
             </motion.div>
           )}
 
-          {/* PROCESSING State - Show LoadingScreen */}
+          {/* PROCESSING State - Show PortfolioLoadingScreen */}
           {state.appState === "PROCESSING" && (
             <motion.div
               key="processing"
@@ -231,121 +163,33 @@ function DemoContent() {
               transition={{ duration: 0.3 }}
               className="flex items-center justify-center min-h-[60vh]"
             >
-              <LoadingScreen status={state.loadingStatus} />
+              <PortfolioLoadingScreen status={state.loadingStatus} />
             </motion.div>
           )}
 
-          {/* RESULTS State - Show Full Dashboard */}
-          {state.appState === "RESULTS" && (
+          {/* RESULTS State - Show PortfolioDashboard */}
+          {state.appState === "RESULTS" && state.portfolioAnalysis && (
             <motion.div
               key="results"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="space-y-6"
             >
-              {/* Document Comparison */}
-              <section>
-                <h2 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-accent text-white flex items-center justify-center text-xs">
-                    1
-                  </span>
-                  Document Comparison
-                </h2>
-                <DocumentStage
-                  leftPanel={
-                    <InvoiceView
-                      invoice={mockInvoice}
-                      highlightedItemId={state.highlightedItemId}
-                    />
-                  }
-                  rightPanel={
-                    <LeaseView
-                      clause={mockLeaseClause}
-                      highlightParagraph={state.highlightedItemId !== null}
-                    />
-                  }
-                />
-              </section>
-
-              {/* Audit Results & Reasoning */}
-              <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div>
-                  <h2 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-accent text-white flex items-center justify-center text-xs">
-                      2
-                    </span>
-                    Audit Findings
-                  </h2>
-                  <AuditPanel
-                    result={state.auditResult}
-                    onItemHover={actions.setHighlightedItem}
-                    onItemClick={(item) => {
-                      actions.setHighlightedItem(item.id);
-                    }}
-                  />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-accent text-white flex items-center justify-center text-xs">
-                      3
-                    </span>
-                    AI Reasoning
-                  </h2>
-                  <ReasoningPanel
-                    steps={state.auditResult?.reasoning ?? []}
-                    isExpanded={state.isReasoningExpanded}
-                    onToggle={actions.toggleReasoning}
-                  />
-                </div>
-              </section>
-
-              {/* Dashboard */}
-              <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div>
-                  <h2 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-accent text-white flex items-center justify-center text-xs">
-                      4
-                    </span>
-                    Savings Impact
-                  </h2>
-                  <SavingsCounter
-                    amount={state.auditResult?.savings ?? 0}
-                    duration={1000}
-                  />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-accent text-white flex items-center justify-center text-xs">
-                      5
-                    </span>
-                    Historical Performance
-                  </h2>
-                  <SavingsTimeline
-                    data={mockTimelineData}
-                    currentSavings={state.auditResult?.savings ?? 0}
-                  />
-                </div>
-              </section>
-
-              {/* Actions */}
-              {state.auditResult?.anomalyDetected && (
-                <section className="flex justify-center pt-4">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={actions.openDisputeModal}
-                    className="px-8 py-3 bg-accent text-white rounded-lg font-semibold text-sm hover:bg-accent-hover transition-colors shadow-lg shadow-accent/20"
-                  >
-                    Generate Dispute Letter
-                  </motion.button>
-                </section>
-              )}
+              <PortfolioDashboard
+                analysis={state.portfolioAnalysis}
+                highlightedLeaseId={state.highlightedLeaseId}
+                highlightedInsightId={state.highlightedInsightId}
+                isReasoningExpanded={state.isReasoningExpanded}
+                onLeaseClick={actions.setHighlightedLease}
+                onInsightClick={actions.setHighlightedInsight}
+                onToggleReasoning={actions.toggleReasoning}
+              />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
+
       {/* Footer */}
       <footer className="mt-16 border-t border-slate/10 py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -356,9 +200,7 @@ function DemoContent() {
                 alt="Leamur"
                 className="h-6 w-auto opacity-60"
               />
-              <span className="text-xs text-slate/60">
-                Powered by Leamur.ai
-              </span>
+              <span className="text-xs text-slate/60">Powered by Leamur.ai</span>
             </div>
             <p className="text-xs text-slate/50">
               The AI-powered Operating System for commercial tenants
@@ -370,7 +212,7 @@ function DemoContent() {
   );
 }
 
-// Wrap in Suspense for useSearchParams
+// Wrap in Suspense for any future useSearchParams usage
 export default function Home() {
   return (
     <Suspense
@@ -385,7 +227,7 @@ export default function Home() {
         </div>
       }
     >
-      <DemoContent />
+      <RadarContent />
     </Suspense>
   );
 }

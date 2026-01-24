@@ -268,3 +268,277 @@ Research confirmed GPT-5.2 exists with variants: instant, thinking, pro.
 **PRD.md and SESSION_HANDOFF.md updated accordingly.**
 
 ---
+
+## 2026-01-23 - Critical Demo Review & Strategic Pivot
+
+**Topic:** The demo is "not good enough" - need to differentiate from Leamur's existing capabilities
+
+**Gemini said:**
+
+### The Problem (Brutal Honesty)
+
+1. **No Real Lease Upload**: The demo only uses a hardcoded lease. There's no place to upload the actual lease agreement - users must use the pre-set "Unit 4B" lease against whatever invoice they upload. This is fundamentally broken.
+
+2. **It's Just a Miniature Leamur**: The current implementation doesn't differentiate from what Leamur already does. It's essentially replicating their existing multi-agent approach in a smaller form.
+
+3. **The Core Question**: "How can we make it so good that the company feels stupid saying no?" The current demo doesn't answer this.
+
+### The Strategic Pivot: From "Audit Bot" to "Strategic Litigator"
+
+**The Insight**: Leamur is a "System of Record" (passive - tells you what happened). We need to be a "System of Agency" (active - tells you how to fight back and wins).
+
+### Proposed Multi-Agent Architecture
+
+**Agent A: Gemini 2.5 Flash ("The Research Associate")**
+- Role: The Librarian / Context Engine
+- Superpower: Massive 1M+ token context window
+- Task: Ingest entire lease PDF (50+ pages), amendments, side letters. Retrieve exact paragraphs relevant to each invoice line item.
+- Why not Gemini 2.0?: User clarified Gemini 2.5 Flash is equally fast with similar context window.
+
+**Agent B: OpenAI GPT-5.2 Thinking ("The Senior Partner")**
+- Role: The Auditor / Reasoning Engine
+- Superpower: Deep Chain of Thought reasoning (not just text prediction)
+- Task: Take clauses from Agent A + invoice line items, perform logic verification, generate structured findings.
+- Why GPT-5.2 Thinking?: The "thinking" variants have explicit reasoning capabilities that go beyond text generation.
+
+### The Legal Liability Trap (CRITICAL)
+
+**The Risk**: If we frame this as "The AI Lawyer," legal/compliance teams will shut it down immediately. You cannot give "legal advice" without being a law firm.
+
+**The Solution: "Forensic Accounting, Not Legal Advice"**
+
+| ❌ Legal Opinion (BANNED) | ✅ Forensic Finding (ALLOWED) |
+|---------------------------|-------------------------------|
+| "This charge is illegal. Sue them." | "Line item 'Roof Repair' (£5,000) matches exclusion text in Clause 8.1. Discrepancy detected." |
+| "You are not legally liable." | "Based on text comparison, this charge appears to conflict with documented exclusions." |
+| "You're entitled to dispute." | "Recommended action: Request clarification from landlord." |
+
+### The New UX Requirements
+
+1. **Dual Document Ingestion**: Two upload slots - "Lease (Source of Truth)" and "Invoice (Liability)"
+2. **Transparent Reasoning**: Show the AI "thinking" in real-time: "Scanning Lease Clause 4.2... Found 'Exclusions'... Cross-referencing Invoice Line Item #3..."
+3. **Actionable Output**: Generate "Draft Request for Clarification" (not "Legal Notice")
+
+### The Differentiation Strategy
+
+| Leamur (What They Do) | The Sentinel (What We Do) |
+|-----------------------|---------------------------|
+| System of Record | System of Agency |
+| Tells you what happened | Tells you how to respond |
+| Waits for you to check dashboard | Stops money before it leaves |
+| Flags errors | Generates dispute-ready communication |
+
+### Technical Implementation Notes
+
+- Install `pdf-parse` for server-side PDF text extraction
+- Update `openai.ts` to use `gpt-5.2-thinking` model (not o1-preview)
+- Update `gemini.ts` to use `gemini-2.5-flash`
+- Refactor `page.tsx` for dual-file upload
+- Rewrite `api/analyze/route.ts` to orchestrate real AI pipeline
+- Add mandatory disclaimer: "This output is an automated data comparison for operational monitoring only and does not constitute legal advice."
+
+---
+
+## 2026-01-23 - Strategic Pivot to Portfolio Intelligence
+
+**Topic:** User rejected "Mini-Leamur" approach, Gemini proposes "Sentinel Radar"
+
+**User's Critical Feedback:**
+
+> "Who said they are struggling to perfect it? That's one of the things they already do... I don't mind building the ingestion engine, a trustworthy ingestion engine, for either Portfolio Intelligence or Predictive Leakage... It doesn't make sense that we'll just build something similar to what they have... I'm just giving them a watered-down version of what they have."
+
+**Gemini's Evaluation:**
+
+1. **The "Mini-Leamur" Verdict: VALID.** If Leamur is already selling "Automated Data Extraction" and "Discrepancy Identification," then showing them a single-file audit tool is showing a Ferrari engineer a go-kart. It's a "watered-down version" of their core product.
+
+2. **The Differentiation Gap: VALID.** Leamur focuses on the transaction (Audit Lease A vs. Invoice B). This is a "Depth" problem they have likely solved. To win, we must move to **Breadth** (Strategy).
+
+3. **The Pivot**: They are building a better magnifying glass (finding errors in one doc). We should build a **radar system** (finding patterns across all docs).
+
+### Option B: "The Portfolio Intelligence Engine" (Sentinel Radar)
+
+**The Core Shift: From "Accountant" to "Asset Manager"**
+
+| Leamur (Accountant) | Sentinel Radar (Asset Manager) |
+|---------------------|-------------------------------|
+| Checks if Invoice A matches Lease B | Looks across 50 leases to find hidden value |
+| Tactical | Strategic |
+| "Is this invoice wrong?" | "Where are we bleeding money across all properties?" |
+
+**The "Wow" Demo Flow:**
+
+**1. The Setup (The "Black Box" Problem)**
+- Current State: CFO has 50 PDFs in Dropbox. Knows they're losing money, doesn't know where.
+- Demo Start: Empty, dark dashboard. "Portfolio Blindspots Detected."
+
+**2. The Action (Bulk Intelligence)**
+- Input: "Ingest Portfolio (Upload Multiple Leases)" instead of single file
+- Tech: `pdf-parse` to strip text from 3-5 distinct sample leases simultaneously
+- The Brain: Gemini 2.5 Flash's huge context window allows dumping ALL leases at once: "Compare these. Find the anomalies. Who has the worst terms?"
+
+**3. The Insights (Strategic Risk Map)**
+
+| Insight Type | Example Finding | Why It Wins |
+|-------------|-----------------|-------------|
+| **Clause Variance** ("Bad Deal" Detector) | "80% of your leases cap 'Admin Fees' at 5%. Alert: 'Soho Retail' has NO CAP. Projected leakage: £15k/year." | Shows immediate ROI without waiting for invoice |
+| **Leverage Discovery** ("Negotiator") | "You're renewing Unit 4B. Note: Unit 5A successfully negotiated 'Pandemic Abatement' clause. Use as precedent." | Gives them information they own but can't access |
+| **Exposure Aggregation** | "Total exposure to 'unlimited HVAC repair liability' across portfolio: £450,000." | Quantifies hidden risk at portfolio level |
+
+**Why This Kills "Mini-Leamur":**
+- Leamur: "I found a £50 error on this cleaning bill." (Nice to have)
+- Sentinel: "I found a £50k liability in your standard lease template." (Must have)
+
+**The Build Plan:**
+1. Backend: Install `pdf-parse`
+2. Data: Generate 3 "Synthetic Leases" with hidden differences (needles in haystack)
+3. UI: Scrap "Split View" → Build "Portfolio Dashboard" with "Detected Risks" list and "Clause Comparison" table
+4. AI Logic: Change prompt from "Audit this Invoice" to "Analyze this Portfolio for Anomalies"
+
+---
+
+## 2026-01-23 - Gemini Responds to Claude's Critique
+
+**Topic:** Alignment on scope constraints and execution plan
+
+**Gemini said:**
+
+> "Claude's critique is spot on, particularly regarding the 'Context Window Reality Check' and the 'Scope Constraint.'"
+
+### Adjustments Based on Claude's Feedback
+
+**1. Context Window Reality (Claude is right)**
+- Was overly optimistic about stuffing 50 leases into one prompt
+- Claude's math (25k-40k tokens per lease) is accurate
+- **Adjustment**: Limit live processing to **3 leases** for demo (≈150k tokens, fits comfortably in 1M window)
+
+**2. "Needle in Haystack" Challenge (Claude is right)**
+- Random lorem ipsum won't work for legal variation
+- **Adjustment**: Use "Synthetic Leases" with specific, meaningful differences (e.g., "5% Cap" vs. "No Cap")
+
+**3. Scope Constraint (Crucial)**
+- Claude warns this is "essentially a new product"
+- **Adjustment**: Reuse existing components
+  - **Keep**: Visual identity, LogStream, basic layout structure
+  - **Scrap**: "Split View" (Left: Invoice, Right: Lease)
+  - **Build**: "Portfolio Dashboard" (Cards showing aggregate risk)
+
+### The Revised Execution Plan (Aligned with Claude)
+
+**Strict Constraint: 3 Leases Only**
+
+**Step 1: The Foundation (Ingestion)**
+- Install `pdf-parse`
+- Create 3 "Synthetic Lease" files (Standard vs. Bad vs. Good)
+
+**Step 2: The "Brain" (Gemini 2.5 Flash)**
+- Update `gemini.ts` to accept array of documents
+- New Prompt: "Compare these 3 documents. Identify variances in [Operating Expenses], [Force Majeure], and [Termination Options]."
+
+**Step 3: The Dashboard (UI)**
+- Modify `page.tsx` to accept multiple files
+- Replace "Invoice Audit" panel with "Portfolio Risk" panel
+- Show 3 insights: Clause Variance, Leverage Discovery, Exposure Aggregation
+
+---
+
+## 2026-01-23 - Execution Decisions Finalized
+
+**Topic:** User confirms direction based on Claude's questions
+
+**Decisions Made:**
+
+| Question | Decision | Reasoning |
+|----------|----------|-----------|
+| **Build location** | Existing sentinel-demo | Branding, LogStream, Next.js setup already solid. Refactor, don't rebuild. |
+| **Lease format** | Actual PDFs (or text files treated as PDFs for MVP) | PDFs trigger "this is real" psychology. System built to handle PDFs via pdf-parse. |
+| **GPT-5.2 in loop?** | No, Gemini only for V1 | Gemini 2.5 Flash smart enough for comparison. Adding OpenAI adds latency/complexity. Add later if needed. |
+| **Approach** | Mock-first | Build UI with hardcoded JSON first. Once sexy, swap for real Gemini API. |
+
+**Ready to Execute.**
+
+---
+
+## 2026-01-23 - Gemini Scopes Down Plan
+
+**Topic:** Plan too ambitious - defer Live AI to future
+
+**Gemini said:**
+
+> "Claude's plan to do all 3 iterations in one go is very ambitious."
+
+### Evaluation
+1. **Is it too much?** Yes. Trying to wire up live AI (Iteration 3) while building a complex Dashboard (Iteration 2) is a recipe for failure.
+2. **Is there a way to make this work?** Yes. The "Cheat Code" is to **Mock Everything First**.
+
+### Recommendation
+Commit to **Iteration 1 (Foundation) and Iteration 2 (Dashboard UI) only**.
+
+- Build "Sentinel Radar" UI using synthetic data
+- Get a visually stunning, fully clickable demo TODAY
+- Leave Live AI (Iteration 3) for the future
+
+**Scope: Iterations 1 + 2 only. No live AI in V1.**
+
+---
+
+## 2026-01-23 - Gemini Approves Plan (9.5/10)
+
+**Topic:** Final plan evaluation before execution
+
+**Gemini said:**
+
+> "This plan is excellent. It is disciplined, scoped correctly, and solves the core problem ('Ambition vs. Reality')."
+
+### Evaluation
+
+1. **The Scope (Iterations 1 & 2 Only)**: Perfect. By explicitly cutting "Live AI" (Iteration 3), we guarantee success. We are building a "Movie Set" (Mock) instead of a "Working Power Plant" (Live AI).
+
+2. **The Architecture (Reuse vs. Rebuild)**: Smart. Reusing LogStream and existing Tailwind saves hours.
+
+3. **The Synthetic Data (3 Specific Leases)**: Crucial. "Standard" vs. "Bad" vs. "Good" creates a narrative. Allows the demo to tell a story.
+
+4. **The UI Layout (Grid/Cards)**: Ambitious but Necessary. Moving from "Split View" to "Dashboard" is significant but it's the only way to show "Portfolio" intelligence.
+
+### Modification
+
+> "Claude suggests 'Text files treated as PDFs.' I will go one step further: Make the file extension `.pdf` (even if content is text) so the browser's File Picker looks authentic. The `pdf-parse` library might choke on them if they aren't real binary PDFs, so for the Mock version, we won't actually parse them—we'll just **detect the filenames** (e.g., `lease_standard.pdf`) and trigger the corresponding mock data. This is safer and faster."
+
+**Final Score: 9.5/10**
+
+**PLAN APPROVED - Ready for Execution**
+
+---
+
+## 2026-01-23 - Gemini Creates Synthetic Lease Files
+
+**Topic:** UK Commercial Lease content for demo
+
+**Gemini created 3 lease files in `sentinel-demo/demo-files/`:**
+
+1. **`lease_standard.txt`** (20 Fenchurch Street)
+   - 5% Admin Fee Cap
+   - Tenant Break Year 5 (6 months notice)
+   - Standard "keep in repair" obligation
+   - Uses CPSE-style language
+
+2. **`lease_unfavorable.txt`** (Soho Square)
+   - **15% Admin Fee (NO CAP!)**
+   - **Landlord-only Break Year 5** (no tenant break)
+   - "Put AND Keep" repair obligation (higher burden)
+   - Jersey-registered landlord (offshore)
+   - Upwards-only rent review
+
+3. **`lease_favorable.txt`** (22 Bishopsgate)
+   - Fixed £2,000/yr Admin Fee (RPI linked)
+   - Mutual Break Year 3 AND Year 5 (3 months)
+   - **Pandemic Abatement clause** (rent suspension)
+   - Fair Wear and Tear exemption
+   - Rent review capped at 3% compound
+
+**Key Variances for Demo:**
+- Admin Fee: 5% vs 15% vs £2k fixed
+- Break Clause: Tenant vs Landlord vs Mutual
+- Pandemic Protection: Only one lease has it
+- Repair Burden: "Keep" vs "Put and Keep"
+
+---
