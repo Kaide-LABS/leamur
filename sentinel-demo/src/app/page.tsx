@@ -16,6 +16,10 @@ import { PortfolioDashboard } from "@/components/portfolio/PortfolioDashboard";
 // Data & Types
 import { mockPortfolioAnalysis } from "@/data/portfolioMock";
 import type { PortfolioAnalysis } from "@/lib/types-radar";
+import type { LeaseExtraction, ExtractionProgress } from "@/lib/types-extraction";
+
+// Concurrency limit for map phase
+const MAX_CONCURRENT_EXTRACTIONS = 5;
 
 function RadarContent() {
   const searchParams = useSearchParams();
@@ -53,7 +57,7 @@ function RadarContent() {
     return mockPortfolioAnalysis;
   }, [actions]);
 
-  // Play analysis sequence - live mode with real API call
+  // Play analysis sequence - live mode with real API call (legacy monolithic approach)
   const playLiveSequence = useCallback(async () => {
     actions.updateLoadingStatus("Uploading lease documents...");
 
@@ -89,6 +93,121 @@ function RadarContent() {
     return analysis as PortfolioAnalysis;
   }, [actions, state.selectedFiles]);
 
+  // Play Map-Reduce sequence - scalable architecture
+  const playMapReduceSequence = useCallback(async (): Promise<PortfolioAnalysis | null> => {
+    const files = state.selectedFiles;
+    const totalFiles = files.length;
+
+    // Initialize extraction progress
+    const progress: ExtractionProgress = {
+      phase: 'extracting',
+      total_files: totalFiles,
+      completed_files: 0,
+      current_filename: files[0]?.name,
+      successful_extractions: [],
+      failed_files: [],
+    };
+    actions.updateExtractionProgress(progress);
+
+    // Extract single file
+    const extractFile = async (file: File): Promise<LeaseExtraction | null> => {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/api/extract-lease', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log(`[MapReduce] Extracted ${file.name}: risk=${result.extraction.risk_score}`);
+        return result.extraction as LeaseExtraction;
+      } catch (error) {
+        console.error(`[MapReduce] Failed to extract ${file.name}:`, error);
+        return null;
+      }
+    };
+
+    // Process files with concurrency limit
+    const extractions: LeaseExtraction[] = [];
+    const failedFiles: { filename: string; error: string }[] = [];
+
+    for (let i = 0; i < totalFiles; i += MAX_CONCURRENT_EXTRACTIONS) {
+      if (isCancelledRef.current) return null;
+
+      const batch = files.slice(i, i + MAX_CONCURRENT_EXTRACTIONS);
+      const batchPromises = batch.map(extractFile);
+
+      // Update progress for current batch
+      actions.updateExtractionProgress({
+        ...progress,
+        completed_files: i,
+        current_filename: batch[0]?.name,
+        successful_extractions: [...extractions],
+        failed_files: [...failedFiles],
+      });
+
+      const results = await Promise.all(batchPromises);
+
+      results.forEach((result, idx) => {
+        const file = batch[idx];
+        if (result) {
+          extractions.push(result);
+        } else {
+          failedFiles.push({ filename: file.name, error: 'Extraction failed' });
+        }
+      });
+    }
+
+    // Check if we have enough successful extractions to continue
+    if (extractions.length === 0) {
+      actions.analysisError('All extractions failed', []);
+      return null;
+    }
+
+    // Update progress - extraction complete
+    actions.extractionComplete(extractions);
+    console.log(`[MapReduce] Extraction complete: ${extractions.length}/${totalFiles} successful`);
+
+    // Start synthesis phase
+    if (isCancelledRef.current) return null;
+    actions.synthesisStarted();
+
+    try {
+      const synthesisResponse = await fetch('/api/synthesize-portfolio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ extractions }),
+      });
+
+      if (!synthesisResponse.ok) {
+        const errorData = await synthesisResponse.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${synthesisResponse.status}`);
+      }
+
+      const { analysis } = await synthesisResponse.json();
+      console.log(`[MapReduce] Synthesis complete: ${analysis.insights.length} insights generated`);
+
+      // Add warning if some files failed
+      if (failedFiles.length > 0) {
+        analysis._warnings = [`${failedFiles.length} file(s) could not be processed`];
+        analysis._failedFiles = failedFiles;
+      }
+
+      return analysis as PortfolioAnalysis;
+    } catch (error) {
+      console.error('[MapReduce] Synthesis failed:', error);
+      actions.analysisError(`Synthesis failed: ${error}`, extractions);
+      return null;
+    }
+  }, [actions, state.selectedFiles]);
+
   // Main analysis sequence
   const playAnalysisSequence = useCallback(async () => {
     isCancelledRef.current = false;
@@ -103,8 +222,9 @@ function RadarContent() {
       let analysis: PortfolioAnalysis | null;
 
       if (isLive) {
-        console.log("[RadarContent] Live mode - calling API");
-        analysis = await playLiveSequence();
+        // Use Map-Reduce architecture for scalable processing
+        console.log("[RadarContent] Live mode - using Map-Reduce sequence");
+        analysis = await playMapReduceSequence();
       } else {
         console.log("[RadarContent] Mock mode - using simulated data");
         analysis = await playMockSequence();
@@ -123,7 +243,7 @@ function RadarContent() {
     }
 
     isAnalyzingRef.current = false;
-  }, [actions, playLiveSequence, playMockSequence]);
+  }, [actions, playMapReduceSequence, playMockSequence]);
 
   // Handle analyze button with debouncing
   const handleAnalyze = useCallback(() => {
@@ -209,14 +329,15 @@ function RadarContent() {
                     Analyze Your Lease Portfolio
                   </h2>
                   <p className="text-sm text-slate">
-                    Upload 3 lease documents to discover variances, risks, and
+                    Upload up to 20 lease documents to discover variances, risks, and
                     savings opportunities across your portfolio
                   </p>
                 </div>
                 <MultiDropZone
                   onFilesChange={handleFilesChange}
                   onAnalyze={handleAnalyze}
-                  maxFiles={3}
+                  maxFiles={20}
+                  minFiles={2}
                 />
               </div>
             </motion.div>
@@ -232,7 +353,10 @@ function RadarContent() {
               transition={{ duration: 0.3 }}
               className="flex items-center justify-center min-h-[60vh]"
             >
-              <PortfolioLoadingScreen status={state.loadingStatus} />
+              <PortfolioLoadingScreen
+                status={state.loadingStatus}
+                extractionProgress={state.extractionProgress}
+              />
             </motion.div>
           )}
 

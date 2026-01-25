@@ -10,13 +10,15 @@ interface MultiDropZoneProps {
   onAnalyze: () => void;
   disabled?: boolean;
   maxFiles?: number;
+  minFiles?: number;
 }
 
 export function MultiDropZone({
   onFilesChange,
   onAnalyze,
   disabled = false,
-  maxFiles = 3,
+  maxFiles = 20,
+  minFiles = 2,
 }: MultiDropZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -106,14 +108,16 @@ export function MultiDropZone({
     }
   }, [disabled, selectedFiles.length, maxFiles]);
 
-  const isReady = selectedFiles.length === maxFiles;
+  const isReady = selectedFiles.length >= minFiles;
+  const isFull = selectedFiles.length >= maxFiles;
 
   return (
     <div className="space-y-4">
       {/* Status indicator */}
       <div className="flex items-center justify-between text-sm">
         <span className="text-slate">
-          {selectedFiles.length} of {maxFiles} leases selected
+          {selectedFiles.length} lease{selectedFiles.length !== 1 ? 's' : ''} selected
+          {!isReady && ` (min ${minFiles})`}
         </span>
         {isReady && (
           <motion.span
@@ -194,7 +198,7 @@ export function MultiDropZone({
             </AnimatePresence>
 
             {/* Add more files prompt */}
-            {selectedFiles.length < maxFiles && (
+            {!isFull && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -202,9 +206,9 @@ export function MultiDropZone({
               >
                 <Upload className="h-4 w-4" />
                 <span>
-                  Drop {maxFiles - selectedFiles.length} more{" "}
-                  {maxFiles - selectedFiles.length === 1 ? "lease" : "leases"}{" "}
-                  or click to browse
+                  {isReady
+                    ? "Add more leases or click Analyze"
+                    : `Add ${minFiles - selectedFiles.length} more lease${minFiles - selectedFiles.length === 1 ? '' : 's'} to continue`}
                 </span>
               </motion.div>
             )}
@@ -228,7 +232,7 @@ export function MultiDropZone({
               ) : (
                 <>
                   <p className="text-sm font-medium text-navy">
-                    Drop {maxFiles} lease PDFs here
+                    Drop lease PDFs here (2-{maxFiles} files)
                   </p>
                   <p className="text-xs text-slate mt-1">or click to browse</p>
                 </>
@@ -252,7 +256,9 @@ export function MultiDropZone({
         whileHover={isReady && !disabled ? { scale: 1.02 } : {}}
         whileTap={isReady && !disabled ? { scale: 0.98 } : {}}
       >
-        {isReady ? "Analyze Portfolio" : `Select ${maxFiles} Leases to Analyze`}
+        {isReady
+          ? `Analyze ${selectedFiles.length} Lease${selectedFiles.length !== 1 ? 's' : ''}`
+          : `Select at least ${minFiles} leases to analyze`}
       </motion.button>
     </div>
   );

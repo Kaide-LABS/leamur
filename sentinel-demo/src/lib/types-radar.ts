@@ -1,12 +1,15 @@
 // Sentinel Radar - Portfolio Intelligence Types
 
+import type { ExtractionProgress, LeaseExtraction } from './types-extraction';
+
 export interface LeaseClauseExtended {
   id: string;
-  category: 'admin-fee' | 'break-clause' | 'repair' | 'rent-review' | 'pandemic' | 'alienation' | 'forfeiture';
+  category: 'admin-fee' | 'break-clause' | 'repair' | 'rent-review' | 'pandemic' | 'alienation' | 'forfeiture' | 'turnover-rent' | 'promotion-levy' | 'service-charge' | 'insurance' | 'dilapidations';
   title: string;
   text: string;
   riskLevel: 'low' | 'medium' | 'high';
   value?: string; // e.g., "5%", "Year 5", "£2,000"
+  clause_reference?: string; // e.g., "Clause 12.3", "Schedule 2, Part A"
 }
 
 export interface Lease {
@@ -21,6 +24,23 @@ export interface Lease {
   riskScore: number; // 0-100
   riskLevel: 'low' | 'medium' | 'high';
   clauses: LeaseClauseExtended[];
+  // New financial fields (Iteration 4)
+  turnover_rent?: {
+    percentage: number;
+    threshold?: number;
+    clause_reference: string;
+  };
+  promotion_levy?: {
+    percentage?: number;
+    fixed_amount?: number;
+    clause_reference: string;
+  };
+  service_charge_cap?: {
+    cap_percentage?: number;
+    cap_amount?: number;
+    clause_reference: string;
+  };
+  risk_calculation_logic?: string; // e.g., "Base 50 + 25 (no break) = 75"
 }
 
 export interface PortfolioInsight {
@@ -55,6 +75,7 @@ export interface ExposureAggregation {
   highRiskCount: number;
   mediumRiskCount: number;
   lowRiskCount: number;
+  calculation_logic?: string; // e.g., "Portfolio risk = (L1×£50k×75 + L2×£75k×60) / total rent"
 }
 
 export interface PortfolioReasoningStep {
@@ -84,7 +105,12 @@ export type RadarAction =
   | { type: 'SET_HIGHLIGHTED_LEASE'; payload: string | null }
   | { type: 'SET_HIGHLIGHTED_INSIGHT'; payload: string | null }
   | { type: 'TOGGLE_REASONING' }
-  | { type: 'RESET' };
+  | { type: 'RESET' }
+  // New Map-Reduce actions
+  | { type: 'UPDATE_EXTRACTION_PROGRESS'; payload: ExtractionProgress }
+  | { type: 'EXTRACTION_COMPLETE'; payload: LeaseExtraction[] }
+  | { type: 'SYNTHESIS_STARTED' }
+  | { type: 'ANALYSIS_ERROR'; payload: { error: string; partialResults?: LeaseExtraction[] } };
 
 export interface RadarState {
   appState: RadarAppState;
@@ -94,4 +120,7 @@ export interface RadarState {
   highlightedLeaseId: string | null;
   highlightedInsightId: string | null;
   isReasoningExpanded: boolean;
+  // Map-Reduce extraction progress
+  extractionProgress: ExtractionProgress | null;
+  analysisError: string | null;
 }

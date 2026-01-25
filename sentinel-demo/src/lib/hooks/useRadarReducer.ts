@@ -2,6 +2,7 @@
 
 import { useReducer, useCallback, useMemo } from "react";
 import type { RadarState, RadarAction, PortfolioAnalysis } from "@/lib/types-radar";
+import type { ExtractionProgress, LeaseExtraction } from "@/lib/types-extraction";
 
 const initialState: RadarState = {
   appState: "IDLE",
@@ -11,6 +12,8 @@ const initialState: RadarState = {
   highlightedLeaseId: null,
   highlightedInsightId: null,
   isReasoningExpanded: false,
+  extractionProgress: null,
+  analysisError: null,
 };
 
 function radarReducer(state: RadarState, action: RadarAction): RadarState {
@@ -37,6 +40,8 @@ function radarReducer(state: RadarState, action: RadarAction): RadarState {
         highlightedLeaseId: null,
         highlightedInsightId: null,
         isReasoningExpanded: false,
+        extractionProgress: null,
+        analysisError: null,
       };
 
     case "UPDATE_LOADING_STATUS":
@@ -78,6 +83,52 @@ function radarReducer(state: RadarState, action: RadarAction): RadarState {
 
     case "RESET":
       return initialState;
+
+    // Map-Reduce actions
+    case "UPDATE_EXTRACTION_PROGRESS":
+      return {
+        ...state,
+        extractionProgress: action.payload,
+        loadingStatus: action.payload.phase === 'extracting'
+          ? `Extracting lease ${action.payload.completed_files + 1} of ${action.payload.total_files}...`
+          : action.payload.phase === 'synthesizing'
+          ? 'Synthesizing portfolio analysis...'
+          : state.loadingStatus,
+      };
+
+    case "EXTRACTION_COMPLETE":
+      return {
+        ...state,
+        extractionProgress: state.extractionProgress
+          ? {
+              ...state.extractionProgress,
+              phase: 'complete',
+              successful_extractions: action.payload,
+            }
+          : null,
+      };
+
+    case "SYNTHESIS_STARTED":
+      return {
+        ...state,
+        loadingStatus: "Synthesizing portfolio insights...",
+        extractionProgress: state.extractionProgress
+          ? { ...state.extractionProgress, phase: 'synthesizing' }
+          : null,
+      };
+
+    case "ANALYSIS_ERROR":
+      return {
+        ...state,
+        analysisError: action.payload.error,
+        extractionProgress: state.extractionProgress
+          ? {
+              ...state.extractionProgress,
+              phase: 'error',
+              successful_extractions: action.payload.partialResults || [],
+            }
+          : null,
+      };
 
     default:
       return state;
@@ -124,6 +175,23 @@ export function useRadarReducer() {
     dispatch({ type: "RESET" });
   }, []);
 
+  // Map-Reduce action creators
+  const updateExtractionProgress = useCallback((progress: ExtractionProgress) => {
+    dispatch({ type: "UPDATE_EXTRACTION_PROGRESS", payload: progress });
+  }, []);
+
+  const extractionComplete = useCallback((extractions: LeaseExtraction[]) => {
+    dispatch({ type: "EXTRACTION_COMPLETE", payload: extractions });
+  }, []);
+
+  const synthesisStarted = useCallback(() => {
+    dispatch({ type: "SYNTHESIS_STARTED" });
+  }, []);
+
+  const analysisError = useCallback((error: string, partialResults?: LeaseExtraction[]) => {
+    dispatch({ type: "ANALYSIS_ERROR", payload: { error, partialResults } });
+  }, []);
+
   // Memoize actions object to prevent infinite loops in useEffect dependencies
   const actions = useMemo(
     () => ({
@@ -136,6 +204,11 @@ export function useRadarReducer() {
       setHighlightedInsight,
       toggleReasoning,
       reset,
+      // Map-Reduce actions
+      updateExtractionProgress,
+      extractionComplete,
+      synthesisStarted,
+      analysisError,
     }),
     [
       uploadFiles,
@@ -147,6 +220,10 @@ export function useRadarReducer() {
       setHighlightedInsight,
       toggleReasoning,
       reset,
+      updateExtractionProgress,
+      extractionComplete,
+      synthesisStarted,
+      analysisError,
     ]
   );
 
