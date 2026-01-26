@@ -1,11 +1,36 @@
 # Session Handoff Notes
 
-**Last Updated**: 2026-01-23
+**Last Updated**: 2026-01-26
 **Project**: The Sentinel - Leamur.ai Demo
 
 ---
 
-## Status: Branding Complete - Ready for Deploy/Testing
+## Status: Live AI Mode Default - Ready for Testing
+
+## Completed This Session (2026-01-26)
+
+1. **Made Live AI Mode Default**
+   - Changed default from mock to live mode
+   - Use `?mock=true` URL param for mock mode (was `?live=true` for live)
+   - Updated `useAIMode.ts` hook and `page.tsx`
+   - Build verified successful
+
+2. **Updated Nia API Keys**
+   - New key across 8 config files (Claude, Cursor, Copilot, Gemini, LM Studio, Qodo, BoltAI, Perplexity)
+
+3. **Committed and Pushed** - commit `7db5c61`
+
+---
+
+## Previous Session (2026-01-25)
+
+- Map-Reduce architecture implemented (Agent A + Agent B)
+- Live Gemini 2.5 Flash integration
+- Weighted risk scoring with calculation logic
+
+---
+
+## Previous Status: Branding Complete - Ready for Deploy/Testing
 
 ## Completed This Session (2026-01-23)
 
