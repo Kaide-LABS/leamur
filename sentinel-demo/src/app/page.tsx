@@ -23,7 +23,8 @@ const MAX_CONCURRENT_EXTRACTIONS = 5;
 
 function RadarContent() {
   const searchParams = useSearchParams();
-  const isLiveMode = searchParams.get("live") === "true";
+  // Default to live mode, use ?mock=true to switch to mock
+  const isLiveMode = searchParams.get("mock") !== "true";
 
   const { state, actions } = useRadarReducer();
   const isCancelledRef = useRef(false);
@@ -213,10 +214,11 @@ function RadarContent() {
     isCancelledRef.current = false;
 
     // Read live mode directly from URL to avoid stale closure issues
+    // Default to live mode, use ?mock=true to switch to mock
     const urlParams = new URLSearchParams(window.location.search);
-    const isLive = urlParams.get("live") === "true";
+    const isLive = urlParams.get("mock") !== "true";
 
-    console.log("[RadarContent] isLive (from URL):", isLive);
+    console.log("[RadarContent] isLive (from URL):", isLive, "(default is live, use ?mock=true for mock)");
 
     try {
       let analysis: PortfolioAnalysis | null;

@@ -4,5 +4,6 @@ import { useSearchParams } from "next/navigation";
 
 export function useAIMode(): "mock" | "live" {
   const searchParams = useSearchParams();
-  return searchParams.get("live") === "true" ? "live" : "mock";
+  // Default to live mode, use ?mock=true to switch to mock
+  return searchParams.get("mock") === "true" ? "mock" : "live";
 }
