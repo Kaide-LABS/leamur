@@ -542,3 +542,42 @@ Commit to **Iteration 1 (Foundation) and Iteration 2 (Dashboard UI) only**.
 - Repair Burden: "Keep" vs "Put and Keep"
 
 ---
+
+## 2026-01-26 - Multi-Agent Architecture: Gemini Reader + GPT Thinker
+
+**Topic:** Switching synthesis phase from Gemini to GPT-5 for higher quality insights
+
+**User Context:**
+- Prefers multi-agent approach (Gemini for extraction, GPT for reasoning)
+- Has substantial GPT-5 credits to use
+- Wants GPT 5 or GPT 5.1, NOT GPT 4.0
+- Gemini 2.5 is stable, Gemini 3 is not stable yet
+
+**Gemini said:**
+
+### Evaluation of the "Gemini Reader + GPT Thinker" Architecture
+
+This is the optimal architecture for this specific use case.
+
+### 1. The Latency Myth (in this specific flow)
+The latency concern was valid when we were talking about real-time chat or processing 20 files sequentially.
+- **Map Phase (Extraction)**: Processing 20 PDFs in parallel. Gemini Flash is essential - fast (sub-second per page) and massive context window.
+- **Reduce Phase (Synthesis)**: Happens once at the end. User has already watched processing for ~15 seconds. Adding 3 extra seconds for GPT-5 to "think deeply" is imperceptible. It actually adds weight to the result.
+
+### 2. The Context Window "Sweet Spot"
+- **Input to Gemini (Reader)**: 20 x 100-page PDFs (~1,000,000 tokens). Needs Gemini.
+- **Input to GPT (Thinker)**: Not sending PDFs - sending extracted JSON from Map phase.
+- **Math**: 20 leases x ~500 tokens of JSON = ~10,000 tokens.
+- **Result**: Fits easily into GPT context window. No chunking required.
+
+### 3. "IQ" vs. "Speed"
+- **Gemini 2.5 Flash**: High-speed reader. Great at "Find the Break Clause." Less good at strategic synthesis.
+- **GPT-5**: "Partner-level" lawyer. Excels at synthesis: "Generate 3 actionable insights from this data."
+
+### Verdict
+Switch `/api/synthesize-portfolio` route to use OpenAI GPT-5.
+- **Risk**: Low. Data payload is small (JSON).
+- **Reward**: High. The "Insights" section is the "money shot." Better insights = better demo conversion.
+- **Implementation**: Clean swap. Change provider in Synthesis route only, keep Gemini in Extraction route.
+
+---
