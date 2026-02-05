@@ -1,13 +1,24 @@
 # Session Handoff Notes
 
-**Last Updated**: 2026-01-26
+**Last Updated**: 2026-02-05
 **Project**: The Sentinel - Leamur.ai Demo
 
 ---
 
-## Status: Live AI Mode Default - Ready for Testing
+## Status: Multi-Agent Architecture Complete - Ready for Testing
 
-## Completed This Session (2026-01-26)
+## Completed This Session (2026-02-05)
+
+1. **Committed Pending Changes** - commit `8ca17fb`
+   - Switched synthesis API from Gemini to OpenAI GPT-5.2 Pro
+   - Added demo lease PDF files (favorable, standard, unfavorable)
+   - Updated gemini_context.md with architecture decision docs
+
+2. **Tested Server** - Dev server starts successfully on localhost:3000
+
+---
+
+## Previous Session (2026-01-26)
 
 1. **Made Live AI Mode Default**
    - Changed default from mock to live mode
@@ -82,9 +93,9 @@
 
 ## Important Decisions Made
 
-- **AI Strategy**: Split-task (Gemini retrieval -> GPT-5.2 reasoning)
-- **Models**: Gemini 2.5 Flash, GPT-5.2
-- **Default Mode**: Mock (for pitch safety)
+- **AI Strategy**: Multi-agent (Gemini Flash extraction -> GPT-5.2 Pro synthesis)
+- **Models**: Gemini 2.5 Flash (extraction), GPT-5.2 Pro (synthesis)
+- **Default Mode**: Live (use `?mock=true` for mock mode)
 - **Deployment**: Netlify (`npx netlify deploy --prod`)
 - **Branding**: Leamur logo in header + footer
 
