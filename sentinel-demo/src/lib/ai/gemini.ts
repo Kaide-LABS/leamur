@@ -1,15 +1,6 @@
-import { GoogleGenAI } from "@google/genai";
+import { getGeminiClient } from "./gemini-client";
 import { buildClauseRetrievalPrompt } from "./prompts";
 import type { LeaseClause } from "@/lib/types";
-
-// Initialize Gemini client
-const getGeminiClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY environment variable is not set");
-  }
-  return new GoogleGenAI({ apiKey });
-};
 
 interface ClauseRetrievalResult {
   relevantClauses: Array<{

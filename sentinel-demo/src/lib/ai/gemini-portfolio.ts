@@ -1,18 +1,9 @@
 // Gemini Portfolio Analysis Function
 // Uses Gemini 2.5 Flash for multi-lease comparison
 
-import { GoogleGenAI } from "@google/genai";
+import { getGeminiClient } from "./gemini-client";
 import type { PortfolioAnalysis } from "@/lib/types-radar";
 import { buildPortfolioAnalysisPrompt } from "./prompts-portfolio";
-
-// Initialize Gemini client
-const getGeminiClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY environment variable is not set");
-  }
-  return new GoogleGenAI({ apiKey });
-};
 
 export interface LeaseDocument {
   filename: string;

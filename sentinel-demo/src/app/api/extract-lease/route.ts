@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenAI } from '@google/genai';
 import { extractText } from 'unpdf';
+import { getGeminiClient } from '@/lib/ai/gemini-client';
 import { EXTRACTION_SYSTEM_PROMPT, EXTRACTION_USER_PROMPT } from '@/lib/ai/prompts-extraction';
 import type { LeaseExtraction } from '@/lib/types-extraction';
 
@@ -18,12 +18,14 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
-    // Check for API key
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      console.error('[extract-lease] Missing GEMINI_API_KEY');
+    // Initialize Gemini client (supports Vertex AI and API key)
+    let ai;
+    try {
+      ai = getGeminiClient();
+    } catch (configError) {
+      console.error('[extract-lease] Gemini client init failed:', configError);
       return NextResponse.json(
-        { error: 'Gemini API key not configured' },
+        { error: 'Gemini AI not configured', details: String(configError) },
         { status: 500 }
       );
     }
@@ -77,9 +79,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Initialize Gemini client
-    const ai = new GoogleGenAI({ apiKey });
 
     // Build the prompt
     const fullPrompt = EXTRACTION_USER_PROMPT + leaseText;
