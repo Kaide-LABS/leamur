@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
-import { Radar, FileText, CheckCircle, AlertCircle } from "lucide-react";
+import { Radar, FileText, CheckCircle, AlertCircle, ShieldCheck } from "lucide-react";
 import type { ExtractionProgress } from "@/lib/types-extraction";
 
 interface PortfolioLoadingScreenProps {
@@ -19,6 +19,7 @@ export function PortfolioLoadingScreen({
     : 0;
 
   const isExtracting = extractionProgress?.phase === 'extracting';
+  const isValidating = extractionProgress?.phase === 'validating';
   const isSynthesizing = extractionProgress?.phase === 'synthesizing';
   const hasErrors = extractionProgress?.failed_files && extractionProgress.failed_files.length > 0;
 
@@ -74,7 +75,7 @@ export function PortfolioLoadingScreen({
       </div>
 
       {/* Phase Indicator */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
           isExtracting
             ? 'bg-accent/10 text-accent'
@@ -83,7 +84,16 @@ export function PortfolioLoadingScreen({
           <FileText className="h-3.5 w-3.5" />
           Extracting
         </div>
-        <div className="w-8 h-px bg-slate/20" />
+        <div className="w-6 h-px bg-slate/20" />
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+          isValidating
+            ? 'bg-accent/10 text-accent'
+            : 'bg-slate/10 text-slate'
+        }`}>
+          <ShieldCheck className="h-3.5 w-3.5" />
+          Validating
+        </div>
+        <div className="w-6 h-px bg-slate/20" />
         <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
           isSynthesizing
             ? 'bg-accent/10 text-accent'
@@ -128,7 +138,7 @@ export function PortfolioLoadingScreen({
       {/* Status Text */}
       <div className="text-center space-y-2">
         <h3 className="text-lg font-semibold text-navy">
-          {isSynthesizing ? 'Synthesizing Portfolio' : 'Analyzing Portfolio'}
+          {isSynthesizing ? 'Synthesizing Portfolio' : isValidating ? 'Validating Extractions' : 'Analyzing Portfolio'}
         </h3>
         <AnimatePresence mode="wait">
           <motion.p

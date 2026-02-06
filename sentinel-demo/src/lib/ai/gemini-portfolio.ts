@@ -1,7 +1,7 @@
 // Gemini Portfolio Analysis Function
 // Uses Gemini 2.5 Flash for multi-lease comparison
 
-import { getGeminiClient } from "./gemini-client";
+import { getGeminiClient, GEMINI_MODEL } from "./gemini-client";
 import type { PortfolioAnalysis } from "@/lib/types-radar";
 import { buildPortfolioAnalysisPrompt } from "./prompts-portfolio";
 
@@ -30,7 +30,7 @@ export async function analyzePortfolio(
   console.log(`[Gemini Portfolio] Total content length: ${prompt.length} characters`);
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: GEMINI_MODEL,
     contents: prompt,
     config: {
       // Note: responseSchema removed due to Gemini's max nesting depth limit

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractText } from 'unpdf';
-import { getGeminiClient } from '@/lib/ai/gemini-client';
+import { getGeminiClient, GEMINI_MODEL } from '@/lib/ai/gemini-client';
 import { EXTRACTION_SYSTEM_PROMPT, EXTRACTION_USER_PROMPT } from '@/lib/ai/prompts-extraction';
 import type { LeaseExtraction } from '@/lib/types-extraction';
 
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     // Call Gemini 2.5 Flash
     console.log(`[extract-lease] Calling Gemini for ${file.name}...`);
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODEL,
       contents: [
         {
           role: 'user',

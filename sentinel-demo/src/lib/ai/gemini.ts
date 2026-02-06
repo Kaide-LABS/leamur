@@ -1,4 +1,4 @@
-import { getGeminiClient } from "./gemini-client";
+import { getGeminiClient, GEMINI_MODEL } from "./gemini-client";
 import { buildClauseRetrievalPrompt } from "./prompts";
 import type { LeaseClause } from "@/lib/types";
 
@@ -19,7 +19,7 @@ export async function retrieveRelevantClause(
   const prompt = buildClauseRetrievalPrompt(lineItemDescription, leaseText);
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: GEMINI_MODEL,
     contents: prompt,
     config: {
       responseMimeType: "application/json",
@@ -63,7 +63,7 @@ Return JSON:
 }`;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: GEMINI_MODEL,
     contents: prompt,
     config: {
       responseMimeType: "application/json",

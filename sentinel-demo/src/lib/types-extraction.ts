@@ -114,7 +114,7 @@ export interface LeaseExtraction {
  * Extraction progress tracking
  */
 export interface ExtractionProgress {
-  phase: 'extracting' | 'synthesizing' | 'complete' | 'error';
+  phase: 'extracting' | 'validating' | 'synthesizing' | 'complete' | 'error';
   total_files: number;
   completed_files: number;
   current_filename?: string;
@@ -139,4 +139,41 @@ export interface ExtractionCacheEntry {
   hash: string; // filename + size hash
   extraction: LeaseExtraction;
   cached_at: string;
+}
+
+/**
+ * Individual validation issue found by Claude
+ */
+export interface ValidationIssue {
+  field_path: string; // e.g., "risk_score", "financial_terms.base_rent.annual_amount"
+  severity: 'info' | 'warning' | 'error';
+  description: string;
+  original_value: string | number | null;
+  suggested_value: string | number | null;
+}
+
+/**
+ * Per-lease validation result from Claude
+ */
+export interface LeaseValidation {
+  lease_id: string;
+  verdict: 'pass' | 'minor_issues' | 'major_issues';
+  confidence_adjustment: number; // e.g., -10 means reduce confidence by 10
+  corrected_risk_score: number | null; // null if no correction needed
+  issues: ValidationIssue[];
+  quality_score: number; // 0-100
+}
+
+/**
+ * Full validation report from Claude Opus
+ */
+export interface ValidationReport {
+  validations: LeaseValidation[];
+  summary: {
+    total_leases: number;
+    passed: number;
+    minor_issues: number;
+    major_issues: number;
+  };
+  corrected_extractions: LeaseExtraction[];
 }

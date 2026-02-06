@@ -12,6 +12,7 @@
     "test:a11y": "playwright test 'WCAG'"
   },
   "dependencies": {
+    "@anthropic-ai/bedrock-sdk": "^0.26.3",
     "@google/genai": "^1.38.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",

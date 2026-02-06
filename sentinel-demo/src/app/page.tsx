@@ -136,7 +136,7 @@ function RadarContent() {
     };
 
     // Process files with concurrency limit
-    const extractions: LeaseExtraction[] = [];
+    let extractions: LeaseExtraction[] = [];
     const failedFiles: { filename: string; error: string }[] = [];
 
     for (let i = 0; i < totalFiles; i += MAX_CONCURRENT_EXTRACTIONS) {
@@ -175,6 +175,30 @@ function RadarContent() {
     // Update progress - extraction complete
     actions.extractionComplete(extractions);
     console.log(`[MapReduce] Extraction complete: ${extractions.length}/${totalFiles} successful`);
+
+    // === VALIDATION PHASE (Claude Opus 4.6) ===
+    if (isCancelledRef.current) return null;
+    actions.validationStarted();
+
+    try {
+      const validationResponse = await fetch('/api/validate-extractions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ extractions }),
+      });
+
+      if (validationResponse.ok) {
+        const { correctedExtractions, report } = await validationResponse.json();
+        actions.validationComplete({ correctedExtractions, report });
+        extractions = correctedExtractions; // Use corrected for synthesis
+      } else {
+        console.warn('[MapReduce] Validation failed, proceeding unvalidated');
+        actions.validationComplete({ correctedExtractions: extractions, report: null });
+      }
+    } catch (error) {
+      console.warn('[MapReduce] Validation error:', error);
+      actions.validationComplete({ correctedExtractions: extractions, report: null });
+    }
 
     // Start synthesis phase
     if (isCancelledRef.current) return null;

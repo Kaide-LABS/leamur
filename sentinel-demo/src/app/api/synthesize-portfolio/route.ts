@@ -39,21 +39,27 @@ export async function POST(request: NextRequest) {
     // Build the prompt with extractions
     const extractionsJson = JSON.stringify(extractions, null, 2);
 
-    // Call GPT-5.2 Pro for synthesis (uses high reasoning by default)
-    console.log('[synthesize-portfolio] Calling OpenAI GPT-5.2 Pro for synthesis...');
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-5.2-pro',
-      messages: [
-        { role: 'system', content: SYNTHESIS_SYSTEM_PROMPT },
-        { role: 'user', content: SYNTHESIS_USER_PROMPT + extractionsJson }
-      ],
-      response_format: { type: 'json_object' },
+    // Call GPT-5.2 for synthesis via Responses API (xhigh reasoning effort)
+    console.log('[synthesize-portfolio] Calling OpenAI GPT-5.2 for synthesis...');
+    const response = await openai.responses.create({
+      model: 'gpt-5.2',
+      instructions: SYNTHESIS_SYSTEM_PROMPT,
+      input: SYNTHESIS_USER_PROMPT + extractionsJson,
+      text: {
+        format: {
+          type: 'json_object',
+        },
+      },
+      reasoning: {
+        effort: 'xhigh',
+      },
       temperature: 0.2, // Low for deterministic reasoning
-      max_tokens: 16384,
+      max_output_tokens: 16384,
+      store: true,
     });
 
     // Extract text from response
-    const responseText = completion.choices[0]?.message?.content;
+    const responseText = response.output_text;
     if (!responseText) {
       console.error('[synthesize-portfolio] Empty response from OpenAI');
       return NextResponse.json(

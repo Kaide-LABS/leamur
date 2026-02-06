@@ -2,7 +2,7 @@
 
 import { useReducer, useCallback, useMemo } from "react";
 import type { RadarState, RadarAction, PortfolioAnalysis } from "@/lib/types-radar";
-import type { ExtractionProgress, LeaseExtraction } from "@/lib/types-extraction";
+import type { ExtractionProgress, LeaseExtraction, ValidationReport } from "@/lib/types-extraction";
 
 const initialState: RadarState = {
   appState: "IDLE",
@@ -13,6 +13,7 @@ const initialState: RadarState = {
   highlightedInsightId: null,
   isReasoningExpanded: false,
   extractionProgress: null,
+  validationReport: null,
   analysisError: null,
 };
 
@@ -108,6 +109,27 @@ function radarReducer(state: RadarState, action: RadarAction): RadarState {
           : null,
       };
 
+    case "VALIDATION_STARTED":
+      return {
+        ...state,
+        loadingStatus: "Validating extractions with Claude Opus...",
+        extractionProgress: state.extractionProgress
+          ? { ...state.extractionProgress, phase: 'validating' }
+          : null,
+      };
+
+    case "VALIDATION_COMPLETE":
+      return {
+        ...state,
+        validationReport: action.payload.report,
+        extractionProgress: state.extractionProgress
+          ? {
+              ...state.extractionProgress,
+              successful_extractions: action.payload.correctedExtractions,
+            }
+          : null,
+      };
+
     case "SYNTHESIS_STARTED":
       return {
         ...state,
@@ -184,6 +206,17 @@ export function useRadarReducer() {
     dispatch({ type: "EXTRACTION_COMPLETE", payload: extractions });
   }, []);
 
+  const validationStarted = useCallback(() => {
+    dispatch({ type: "VALIDATION_STARTED" });
+  }, []);
+
+  const validationComplete = useCallback(
+    (payload: { correctedExtractions: LeaseExtraction[]; report: ValidationReport | null }) => {
+      dispatch({ type: "VALIDATION_COMPLETE", payload });
+    },
+    []
+  );
+
   const synthesisStarted = useCallback(() => {
     dispatch({ type: "SYNTHESIS_STARTED" });
   }, []);
@@ -207,6 +240,8 @@ export function useRadarReducer() {
       // Map-Reduce actions
       updateExtractionProgress,
       extractionComplete,
+      validationStarted,
+      validationComplete,
       synthesisStarted,
       analysisError,
     }),
@@ -222,6 +257,8 @@ export function useRadarReducer() {
       reset,
       updateExtractionProgress,
       extractionComplete,
+      validationStarted,
+      validationComplete,
       synthesisStarted,
       analysisError,
     ]

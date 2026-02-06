@@ -55,3 +55,5 @@ export async function analyzeInvoice(
 // Re-export for convenience
 export { retrieveRelevantClause } from "./gemini";
 export { performAuditReasoning } from "./openai";
+export { validateExtractions } from "./claude";
+export { getClaudeClient } from "./claude-client";

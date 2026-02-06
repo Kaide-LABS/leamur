@@ -1,6 +1,6 @@
 // Sentinel Radar - Portfolio Intelligence Types
 
-import type { ExtractionProgress, LeaseExtraction } from './types-extraction';
+import type { ExtractionProgress, LeaseExtraction, ValidationReport } from './types-extraction';
 
 export interface LeaseClauseExtended {
   id: string;
@@ -110,6 +110,8 @@ export type RadarAction =
   | { type: 'UPDATE_EXTRACTION_PROGRESS'; payload: ExtractionProgress }
   | { type: 'EXTRACTION_COMPLETE'; payload: LeaseExtraction[] }
   | { type: 'SYNTHESIS_STARTED' }
+  | { type: 'VALIDATION_STARTED' }
+  | { type: 'VALIDATION_COMPLETE'; payload: { correctedExtractions: LeaseExtraction[]; report: ValidationReport | null } }
   | { type: 'ANALYSIS_ERROR'; payload: { error: string; partialResults?: LeaseExtraction[] } };
 
 export interface RadarState {
@@ -122,5 +124,6 @@ export interface RadarState {
   isReasoningExpanded: boolean;
   // Map-Reduce extraction progress
   extractionProgress: ExtractionProgress | null;
+  validationReport: ValidationReport | null;
   analysisError: string | null;
 }
