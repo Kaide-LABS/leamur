@@ -6,9 +6,9 @@ Sentinel Demo is a Next.js lease analysis application using a three-agent AI pip
 ## Architecture
 - **Framework:** Next.js 16.1.4 (Turbopack)
 - **AI Pipeline (3-agent Map-Reduce):**
-  1. **Gemini 2.5 Flash Lite** via Vertex AI — PDF extraction, clause retrieval
-  2. **Claude Opus 4.5** via AWS Bedrock — Quality validation (non-fatal fallback if unavailable)
-  3. **OpenAI GPT-5.2** via Responses API (`reasoning.effort: xhigh`) — Portfolio synthesis
+  1. **Gemini 3 Flash Preview** via Vertex AI (global) — PDF extraction + reasoning, JSON schema constrained
+  2. **Claude Opus 4.5** via AWS Bedrock (us-east-1) — Quality validation (non-fatal, retry w/ backoff)
+  3. **OpenAI GPT-5.2** via Responses API (`reasoning.effort: low`) — Portfolio synthesis
 - **Authentication:**
   - GCP: Service account key file (`service-account.json`) for Vertex AI (Gemini)
   - AWS: Standard credential chain (`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`) for Bedrock (Claude)
@@ -20,14 +20,15 @@ Sentinel Demo is a Next.js lease analysis application using a three-agent AI pip
   - `sentinel-demo/src/lib/ai/prompts-validation.ts` — Claude validation prompts (5-check auditor)
   - `sentinel-demo/src/app/api/validate-extractions/route.ts` — validation endpoint (graceful fallback)
   - `sentinel-demo/src/app/api/synthesize-portfolio/route.ts` — synthesis via OpenAI Responses API
+  - `sentinel-demo/src/lib/ai/schema-extraction.ts` — JSON Schema for Gemini constrained decoding
   - `sentinel-demo/src/lib/types-extraction.ts` — includes `ValidationReport`, `LeaseValidation`, `ValidationIssue`
 
 ## Environment Variables
 - `GOOGLE_GENAI_USE_VERTEXAI=true` — enables Vertex AI mode (Gemini)
 - `GOOGLE_CLOUD_PROJECT` — GCP project for Gemini
-- `GOOGLE_CLOUD_LOCATION=us-central1` — Vertex AI region
+- `GOOGLE_CLOUD_LOCATION=global` — Vertex AI region (required for Gemini 3 Flash)
 - `GOOGLE_APPLICATION_CREDENTIALS=./service-account.json` — GCP service account key
-- `AWS_REGION=us-west-2` — AWS region for Bedrock (Claude)
+- `AWS_REGION=us-east-1` — AWS region for Bedrock (Claude)
 - `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` — AWS credentials for Bedrock
 - `OPENAI_API_KEY` — for GPT-5.2 synthesis
 - `AI_MODE` — `mock` or `live`
@@ -83,10 +84,35 @@ Sentinel Demo is a Next.js lease analysis application using a three-agent AI pip
 - **GCP:** Vertex AI API enabled on project `gen-lang-client-0754692302`
 - **Service account key:** `service-account.json` in project root, gitignored
 
-### 2026-02-07 — Next Session: Demo Readiness (CEO Pitch)
-- **Goal:** Get Sentinel to CEO-pitch quality
-- **Priority 1 — Pre-bake fallback:** Cache known-good pipeline results; serve cached output if live calls fail or timeout
-- **Priority 2 — Harden Gemini JSON parsing:** ~50% failure rate on first parse is unacceptable for live demo; investigate stricter prompts, structured output mode, better post-processing
-- **Priority 3 — File size guard:** Reject PDFs over ~5MB with clear message; prevents event loop freeze from `unpdf` on large files
-- **Priority 4 — Reduce GPT synthesis time:** Currently ~173s; lower `reasoning.effort`, pre-compute for demo PDFs, or add streaming; target <60s
-- **Nia context ID:** `58f6ef95-6ea9-430e-ac8f-f4e280d175fb`
+### 2026-02-07 — Demo Hardening Session
+- **Upgraded Gemini model:** `gemini-2.5-flash-lite` → `gemini-3-flash-preview`
+  - 100% first-parse JSON success (was ~50% with Flash Lite)
+  - All 4 demo PDFs extract in ~24-34s each, zero retries needed
+  - Required changing Vertex AI location from `us-central1` to `global`
+- **Added JSON Schema enforcement:** New `schema-extraction.ts` with `EXTRACTION_JSON_SCHEMA`, passed via `responseJsonSchema` config
+- **Added JSON repair function:** `repairJson()` in extract-lease route handles truncated JSON (closes unclosed braces/brackets/strings), trailing commas
+- **Increased extraction safety:** `maxOutputTokens` 16384→32768, `MAX_ATTEMPTS` 2→3, 3-tier parse (direct → compact → repair)
+- **Claude Bedrock retry:** `maxRetries: 3` on SDK + application-level retry with exponential backoff (2s/4s/8s) for 429/5xx
+- **GPT synthesis speed:** `reasoning.effort` medium→low, compact JSON input (no pretty-print)
+- **Fixed GPT truncation:** `max_output_tokens` was set to 8192 (too small for 4 leases), restored to 16384
+- **Fixed frontend filename mismatch:** Replaced batch processing (`Promise.all` with `MAX_CONCURRENT_EXTRACTIONS=5`) with sequential file processing — UI now accurately shows which file is being extracted
+- **Fixed potential savings showing zero:** Strengthened synthesis prompt with mandatory calculation formulas (admin fees, break clause value, service charge caps, rent review, turnover rent)
+- **Leamur.ai competitive analysis:** Indexed their website via Nia. Their product is obligation management (tracking deadlines, flagging risks). Sentinel fills a gap they don't address: portfolio-level risk analysis, cross-lease variance detection, savings quantification. Complementary, not competing.
+- **Full pipeline verified E2E with 4 PDFs:**
+  - Extraction (Gemini 3 Flash): 4/4 success, ~24-34s each sequential
+  - Validation (Claude Opus 4.5): 33-41s, found 2 minor + 2 major issues
+  - Synthesis (GPT-5.2): ~112-118s, 5-6 insights, portfolio risk ~91
+- **Demo status:** Functionally ready for screen-recorded demo. Live demo risk is ~4 min total pipeline time.
+- **Nia context IDs:**
+  - Product description (fact): `51501c75-1600-4328-b425-407fcfe0c6a4`
+  - Session context (episodic): `58f6ef95-6ea9-430e-ac8f-f4e280d175fb`
+- **Known issues (remaining):**
+  - GPT synthesis ~112s (effort:low didn't help much vs medium)
+  - No pre-baked fallback cache for demo PDFs
+  - No file size guard (22MB+ PDFs can freeze unpdf)
+  - Playwright accessibility tests still all fail (pre-existing)
+
+### Next Session Priorities
+- **Priority 1 — Pre-bake cache:** Serve instant cached results for known demo PDFs with simulated loading
+- **Priority 2 — File size guard:** Reject PDFs >5MB before unpdf processing
+- **Priority 3 — GPT speed:** Investigate streaming or switching to a faster model for synthesis
