@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const openai = new OpenAI({ apiKey });
 
     // Build the prompt with extractions
-    const extractionsJson = JSON.stringify(extractions, null, 2);
+    const extractionsJson = JSON.stringify(extractions);
 
     // Call GPT-5.2 for synthesis via Responses API (xhigh reasoning effort)
     console.log('[synthesize-portfolio] Calling OpenAI GPT-5.2 for synthesis...');
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
         },
       },
       reasoning: {
-        effort: 'medium',
+        effort: 'low',
       },
       max_output_tokens: 16384,
       store: true,

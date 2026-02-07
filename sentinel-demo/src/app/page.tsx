@@ -19,7 +19,6 @@ import type { PortfolioAnalysis } from "@/lib/types-radar";
 import type { LeaseExtraction, ExtractionProgress } from "@/lib/types-extraction";
 
 // Concurrency limit for map phase
-const MAX_CONCURRENT_EXTRACTIONS = 5;
 
 function RadarContent() {
   const searchParams = useSearchParams();
@@ -135,35 +134,31 @@ function RadarContent() {
       }
     };
 
-    // Process files with concurrency limit
+    // Process files sequentially for accurate progress tracking
     let extractions: LeaseExtraction[] = [];
     const failedFiles: { filename: string; error: string }[] = [];
 
-    for (let i = 0; i < totalFiles; i += MAX_CONCURRENT_EXTRACTIONS) {
+    for (let i = 0; i < totalFiles; i++) {
       if (isCancelledRef.current) return null;
 
-      const batch = files.slice(i, i + MAX_CONCURRENT_EXTRACTIONS);
-      const batchPromises = batch.map(extractFile);
+      const file = files[i];
 
-      // Update progress for current batch
+      // Update progress — show which file is currently being processed
       actions.updateExtractionProgress({
         ...progress,
         completed_files: i,
-        current_filename: batch[0]?.name,
+        current_filename: file.name,
         successful_extractions: [...extractions],
         failed_files: [...failedFiles],
       });
 
-      const results = await Promise.all(batchPromises);
+      const result = await extractFile(file);
 
-      results.forEach((result, idx) => {
-        const file = batch[idx];
-        if (result) {
-          extractions.push(result);
-        } else {
-          failedFiles.push({ filename: file.name, error: 'Extraction failed' });
-        }
-      });
+      if (result) {
+        extractions.push(result);
+      } else {
+        failedFiles.push({ filename: file.name, error: 'Extraction failed' });
+      }
     }
 
     // Check if we have enough successful extractions to continue

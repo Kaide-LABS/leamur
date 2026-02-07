@@ -2,6 +2,20 @@ import { getClaudeClient } from "./claude-client";
 import { VALIDATION_SYSTEM_PROMPT, VALIDATION_USER_PROMPT } from "./prompts-validation";
 import type { LeaseExtraction, ValidationReport, LeaseValidation } from "@/lib/types-extraction";
 
+const RETRY_DELAYS_MS = [2000, 4000, 8000]; // exponential backoff
+
+function isRetryableError(error: unknown): boolean {
+  if (error && typeof error === "object" && "status" in error) {
+    const status = (error as { status: number }).status;
+    return status === 429 || status >= 500;
+  }
+  return false;
+}
+
+async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 /**
  * Apply corrections from validation to extractions
  */
@@ -56,17 +70,37 @@ export async function validateExtractions(
 
   console.log(`[Claude Validator] Sending ${extractionsJson.length} chars to Claude Opus 4.6`);
 
-  const response = await client.messages.create({
-    model: "us.anthropic.claude-opus-4-5-20251101-v1:0",
-    max_tokens: 16384,
-    system: VALIDATION_SYSTEM_PROMPT,
-    messages: [
-      {
-        role: "user",
-        content: VALIDATION_USER_PROMPT + extractionsJson,
-      },
-    ],
-  });
+  let response;
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    try {
+      response = await client.messages.create({
+        model: "us.anthropic.claude-opus-4-5-20251101-v1:0",
+        max_tokens: 16384,
+        system: VALIDATION_SYSTEM_PROMPT,
+        messages: [
+          {
+            role: "user",
+            content: VALIDATION_USER_PROMPT + extractionsJson,
+          },
+        ],
+      });
+      break; // success
+    } catch (error) {
+      if (attempt < RETRY_DELAYS_MS.length && isRetryableError(error)) {
+        const delay = RETRY_DELAYS_MS[attempt];
+        console.warn(
+          `[Claude Validator] Attempt ${attempt + 1} failed (${(error as { status: number }).status}), retrying in ${delay}ms...`
+        );
+        await sleep(delay);
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  if (!response) {
+    throw new Error("All Claude validation retry attempts exhausted");
+  }
 
   // Extract text from response
   const textBlock = response.content[0];

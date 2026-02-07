@@ -41,11 +41,18 @@ Generate 3-7 insights, each with:
 - Quantified impact (where possible)
 - Specific recommendation
 
-### 5. POTENTIAL SAVINGS
-Only claim savings that can be substantiated:
-- Admin fee reductions: Compare to market rates
-- Break clause value: Cost of early exit vs remaining obligation
-- Service charge caps: Potential uncapped exposure
+### 5. POTENTIAL SAVINGS (MANDATORY — must be > 0)
+You MUST calculate a non-zero potentialSavings for the portfolio. Use these formulas:
+
+- **Admin fee savings**: If any lease has admin fees above £500, estimate 20% reduction = savings. Formula: total_admin_fees × 0.20
+- **Break clause value**: For leases WITH a break clause, value = remaining_rent_after_break. Formula: annual_rent × years_remaining_after_break
+- **Service charge cap savings**: For leases WITHOUT a service charge cap, estimate 5% annual exposure. Formula: annual_rent × 0.05 × term_years
+- **Rent review renegotiation**: For upward-only rent reviews, estimate 3% above open-market. Formula: annual_rent × 0.03 × remaining_reviews
+- **Turnover rent optimisation**: If turnover rent percentage > 5%, estimate 1% reduction value. Formula: (percentage - 5) × estimated_threshold × 0.01
+
+Sum ALL applicable savings into exposureAggregation.potentialSavings.
+Also assign potentialSavings to individual insights where a specific saving applies.
+Show the calculation in the insight description.
 
 ## Output Format
 Return valid JSON matching the PortfolioAnalysis schema. No markdown, no explanations outside JSON.`;

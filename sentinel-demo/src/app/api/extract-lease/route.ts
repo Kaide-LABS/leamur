@@ -2,10 +2,70 @@ import { NextRequest, NextResponse } from 'next/server';
 import { extractText } from 'unpdf';
 import { getGeminiClient, GEMINI_MODEL } from '@/lib/ai/gemini-client';
 import { EXTRACTION_SYSTEM_PROMPT, EXTRACTION_USER_PROMPT } from '@/lib/ai/prompts-extraction';
+import { EXTRACTION_JSON_SCHEMA } from '@/lib/ai/schema-extraction';
 import type { LeaseExtraction } from '@/lib/types-extraction';
 
 // In-memory cache for extraction results (avoids redundant API calls during testing)
 const extractionCache = new Map<string, LeaseExtraction>();
+
+/**
+ * Attempt to repair malformed JSON from Gemini.
+ * Handles: trailing commas, truncated output (unclosed braces/brackets/strings).
+ */
+function repairJson(text: string): string {
+  let repaired = text;
+
+  // Remove trailing commas before } or ]
+  repaired = repaired.replace(/,\s*([}\]])/g, '$1');
+
+  // Walk the string to detect unclosed structures
+  let inString = false;
+  let escaped = false;
+  let braces = 0;
+  let brackets = 0;
+
+  for (const char of repaired) {
+    if (escaped) { escaped = false; continue; }
+    if (char === '\\') { escaped = true; continue; }
+    if (char === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (char === '{') braces++;
+    if (char === '}') braces--;
+    if (char === '[') brackets++;
+    if (char === ']') brackets--;
+  }
+
+  // If stuck inside a string value, close it
+  if (inString) {
+    // Truncate back to the last complete key-value before the broken string
+    const lastGoodComma = repaired.lastIndexOf(',');
+    const lastGoodBrace = repaired.lastIndexOf('}');
+    const cutPoint = Math.max(lastGoodComma, lastGoodBrace);
+    if (cutPoint > repaired.length * 0.5) {
+      repaired = repaired.substring(0, cutPoint + 1);
+      // Re-count after truncation
+      inString = false; escaped = false; braces = 0; brackets = 0;
+      for (const char of repaired) {
+        if (escaped) { escaped = false; continue; }
+        if (char === '\\') { escaped = true; continue; }
+        if (char === '"') { inString = !inString; continue; }
+        if (inString) continue;
+        if (char === '{') braces++;
+        if (char === '}') braces--;
+        if (char === '[') brackets++;
+        if (char === ']') brackets--;
+      }
+    } else {
+      repaired += '"';
+    }
+  }
+
+  // Close unclosed brackets then braces
+  while (brackets > 0) { repaired += ']'; brackets--; }
+  while (braces > 0) { repaired += '}'; braces--; }
+
+  return repaired;
+}
 
 // Generate cache key from filename and size
 function getCacheKey(filename: string, size: number): string {
@@ -88,7 +148,7 @@ export async function POST(request: NextRequest) {
 
     let extraction: LeaseExtraction | null = null;
     let lastError: unknown = null;
-    const MAX_ATTEMPTS = 2;
+    const MAX_ATTEMPTS = 3;
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       const response = await ai.models.generateContent({
@@ -102,8 +162,9 @@ export async function POST(request: NextRequest) {
         config: {
           systemInstruction: EXTRACTION_SYSTEM_PROMPT,
           responseMimeType: 'application/json',
+          responseJsonSchema: EXTRACTION_JSON_SCHEMA,
           temperature: 0.1,
-          maxOutputTokens: 16384,
+          maxOutputTokens: 32768,
         }
       });
 
@@ -120,17 +181,32 @@ export async function POST(request: NextRequest) {
           text = text.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');
         }
         const sanitized = text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+
+        // Try 1: direct parse
         try {
           extraction = JSON.parse(sanitized);
         } catch {
-          console.warn(`[extract-lease] Attempt ${attempt}: standard parse failed, trying compacted`);
+          // Try 2: compact (collapse whitespace)
           const compacted = sanitized.replace(/\n/g, ' ').replace(/\s+/g, ' ');
-          extraction = JSON.parse(compacted);
+          try {
+            extraction = JSON.parse(compacted);
+          } catch (compactError) {
+            // Log context around failure position for debugging
+            const match = String(compactError).match(/position (\d+)/);
+            if (match) {
+              const pos = parseInt(match[1]);
+              console.warn(`[extract-lease] Attempt ${attempt}: JSON error near position ${pos}: ...${compacted.substring(Math.max(0, pos - 60), pos + 60)}...`);
+            }
+            // Try 3: repair truncated/malformed JSON
+            console.warn(`[extract-lease] Attempt ${attempt}: compacted parse failed, trying repair`);
+            const repaired = repairJson(compacted);
+            extraction = JSON.parse(repaired);
+          }
         }
         break; // success
       } catch (parseError) {
         lastError = parseError;
-        console.warn(`[extract-lease] Attempt ${attempt}: parse failed: ${String(parseError).substring(0, 120)}`);
+        console.warn(`[extract-lease] Attempt ${attempt}: all parse strategies failed: ${String(parseError).substring(0, 150)}`);
       }
     }
 
