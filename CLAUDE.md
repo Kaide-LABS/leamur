@@ -54,6 +54,28 @@ Sentinel Demo is a Next.js lease analysis application using a three-agent AI pip
   - Playwright accessibility tests still all fail (pre-existing, unrelated)
   - AWS credentials not yet added to `.env.local` for Bedrock
 
+### 2026-02-06 (Session 3) — AWS Credentials & Full Pipeline E2E Verified
+- **Configured AWS Bedrock credentials** in `.env.local`: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, region changed from `us-west-2` to `us-east-1`
+- **Full 3-agent pipeline verified end-to-end:**
+  - Extraction (Gemini Flash Lite): 3 PDFs extracted successfully (~10-12s each)
+  - Validation (Claude Opus 4.5 via Bedrock): Real validation in ~38-42s, found issues in all 3 leases (2 minor, 1 major)
+  - Synthesis (GPT-5.2 via Responses API): Portfolio analysis in ~173s, risk score 78.58, 6 insights
+- **Fixed Gemini JSON parsing** (`extract-lease/route.ts`):
+  - Added markdown code fence stripping
+  - Added compacted JSON fallback for literal newlines in string values
+  - Added retry mechanism (2 attempts) for intermittent malformed JSON
+  - Increased `maxOutputTokens` from 8192 to 16384
+  - Lowered `temperature` from 0.2 to 0.1 for more consistent output
+- **Fixed Claude JSON parsing** (`claude.ts`): Strip markdown code fences before `JSON.parse`
+- **Fixed GPT-5.2 synthesis** (`synthesize-portfolio/route.ts`):
+  - Removed unsupported `temperature` parameter (not supported with Responses API for this model)
+  - Changed `reasoning.effort` from `xhigh` to `medium` (xhigh caused empty responses and 4+ min timeouts)
+  - Added response structure logging for debugging
+- **Known issues (remaining):**
+  - Large PDF extraction (22MB+) blocks Node.js event loop via `unpdf` — needs worker thread or size limit
+  - Playwright accessibility tests still all fail (pre-existing, unrelated)
+  - Gemini JSON output is non-deterministic; ~50% of responses need compacted fallback parse
+
 ### 2026-02-06 (Session 1) — Vertex AI Migration
 - **Completed:** Migrated from `GEMINI_API_KEY` direct auth to Vertex AI with service account
 - **Created:** `gemini-client.ts` shared client factory supporting both Vertex AI and API key fallback

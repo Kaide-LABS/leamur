@@ -51,17 +51,21 @@ export async function POST(request: NextRequest) {
         },
       },
       reasoning: {
-        effort: 'xhigh',
+        effort: 'medium',
       },
-      temperature: 0.2, // Low for deterministic reasoning
       max_output_tokens: 16384,
       store: true,
     });
 
     // Extract text from response
+    console.log(`[synthesize-portfolio] Response status: ${response.status}, output items: ${response.output?.length ?? 0}`);
+    for (const item of response.output ?? []) {
+      console.log(`[synthesize-portfolio] Output item: type=${item.type}, ${item.type === 'message' ? `content_types=${item.content?.map((c: { type: string }) => c.type).join(',')}` : ''}`);
+    }
     const responseText = response.output_text;
     if (!responseText) {
-      console.error('[synthesize-portfolio] Empty response from OpenAI');
+      console.error('[synthesize-portfolio] Empty output_text from OpenAI');
+      console.error('[synthesize-portfolio] Full response keys:', Object.keys(response));
       return NextResponse.json(
         { error: 'Empty response from AI' },
         { status: 500 }

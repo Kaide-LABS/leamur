@@ -77,8 +77,14 @@ export async function validateExtractions(
   console.log(`[Claude Validator] Response received: ${textBlock.text.length} chars`);
   console.log(`[Claude Validator] Raw response preview: ${textBlock.text.substring(0, 500)}...`);
 
+  // Strip markdown code fences if present (Claude sometimes wraps JSON in ```json ... ```)
+  let jsonText = textBlock.text.trim();
+  if (jsonText.startsWith("```")) {
+    jsonText = jsonText.replace(/^```(?:json)?\s*\n?/, "").replace(/\n?```\s*$/, "");
+  }
+
   // Parse JSON response
-  const parsed = JSON.parse(textBlock.text) as {
+  const parsed = JSON.parse(jsonText) as {
     validations: LeaseValidation[];
     summary: ValidationReport["summary"];
   };

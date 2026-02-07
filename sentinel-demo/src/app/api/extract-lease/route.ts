@@ -83,58 +83,75 @@ export async function POST(request: NextRequest) {
     // Build the prompt
     const fullPrompt = EXTRACTION_USER_PROMPT + leaseText;
 
-    // Call Gemini 2.5 Flash
+    // Call Gemini with retry — Gemini sometimes produces malformed JSON
     console.log(`[extract-lease] Calling Gemini for ${file.name}...`);
-    const response = await ai.models.generateContent({
-      model: GEMINI_MODEL,
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: fullPrompt }]
+
+    let extraction: LeaseExtraction | null = null;
+    let lastError: unknown = null;
+    const MAX_ATTEMPTS = 2;
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const response = await ai.models.generateContent({
+        model: GEMINI_MODEL,
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: fullPrompt }]
+          }
+        ],
+        config: {
+          systemInstruction: EXTRACTION_SYSTEM_PROMPT,
+          responseMimeType: 'application/json',
+          temperature: 0.1,
+          maxOutputTokens: 16384,
         }
-      ],
-      config: {
-        systemInstruction: EXTRACTION_SYSTEM_PROMPT,
-        responseMimeType: 'application/json',
-        temperature: 0.2, // Low temperature for consistent extraction
-        maxOutputTokens: 8192, // Enough for detailed extraction
-      }
-    });
+      });
 
-    // Extract text from response
-    const responseText = response.text;
-    if (!responseText) {
-      console.error('[extract-lease] Empty response from Gemini');
+      const responseText = response.text;
+      if (!responseText) {
+        lastError = new Error('Empty response from Gemini');
+        console.warn(`[extract-lease] Attempt ${attempt}: empty response`);
+        continue;
+      }
+
+      try {
+        let text = responseText.trim();
+        if (text.startsWith('```')) {
+          text = text.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');
+        }
+        const sanitized = text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+        try {
+          extraction = JSON.parse(sanitized);
+        } catch {
+          console.warn(`[extract-lease] Attempt ${attempt}: standard parse failed, trying compacted`);
+          const compacted = sanitized.replace(/\n/g, ' ').replace(/\s+/g, ' ');
+          extraction = JSON.parse(compacted);
+        }
+        break; // success
+      } catch (parseError) {
+        lastError = parseError;
+        console.warn(`[extract-lease] Attempt ${attempt}: parse failed: ${String(parseError).substring(0, 120)}`);
+      }
+    }
+
+    if (!extraction) {
+      console.error('[extract-lease] All parse attempts failed:', lastError);
       return NextResponse.json(
-        { error: 'Empty response from AI' },
+        { error: 'Failed to parse AI response', details: String(lastError) },
         { status: 500 }
       );
     }
 
-    // Parse JSON response
-    let extraction: LeaseExtraction;
-    try {
-      extraction = JSON.parse(responseText);
+    // Ensure required fields
+    extraction.filename = file.name;
+    extraction.extraction_timestamp = new Date().toISOString();
 
-      // Ensure required fields
-      extraction.filename = file.name;
-      extraction.extraction_timestamp = new Date().toISOString();
-
-      // Validate risk score cap
-      if (extraction.risk_score > 95) {
-        extraction.risk_score = 95;
-        extraction.risk_calculation_logic += ' → capped at 95';
-      }
-
-      console.log(`[extract-lease] Extracted ${file.name}: risk=${extraction.risk_score}, confidence=${extraction.overall_confidence}`);
-    } catch (parseError) {
-      console.error('[extract-lease] Failed to parse Gemini response:', parseError);
-      console.error('[extract-lease] Raw response:', responseText.substring(0, 500));
-      return NextResponse.json(
-        { error: 'Failed to parse AI response', details: String(parseError) },
-        { status: 500 }
-      );
+    if (extraction.risk_score > 95) {
+      extraction.risk_score = 95;
+      extraction.risk_calculation_logic += ' → capped at 95';
     }
+
+    console.log(`[extract-lease] Extracted ${file.name}: risk=${extraction.risk_score}, confidence=${extraction.overall_confidence}`);
 
     // Cache the result
     extractionCache.set(cacheKey, extraction);
