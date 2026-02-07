@@ -581,3 +581,51 @@ Switch `/api/synthesize-portfolio` route to use OpenAI GPT-5.
 - **Implementation**: Clean swap. Change provider in Synthesis route only, keep Gemini in Extraction route.
 
 ---
+
+## 2026-02-06 - Three-Agent Architecture: Vertex AI Python Reference (Gemini + Claude Opus)
+
+### Gemini's Feedback:
+Gemini provided a Python reference implementation for accessing both Gemini 2.5 Flash Lite and Claude Opus 4.6 through Vertex AI on the same GCP project. Key architectural points:
+
+- **Gemini** served from `us-central1`, **Claude** served from `us-east5` (different Vertex AI regions)
+- Uses `vertexai` Python SDK + `GenerativeModel` for Gemini
+- Uses `anthropic` Python SDK with `AnthropicVertex` client for Claude
+- Model IDs: `gemini-2.5-flash-lite-preview-09-2025`, `claude-opus-4-6`
+- Both models accessed through same GCP project, unified billing
+- Simple function-based pattern: `ask_gemini_flash()` and `ask_claude_opus()`
+
+```python
+import os
+import vertexai
+from vertexai.generative_models import GenerativeModel
+from anthropic import AnthropicVertex
+from dotenv import load_dotenv
+
+load_dotenv()
+PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT")
+CLAUDE_REGION = os.getenv("VERTEX_CLAUDE_REGION", "us-east5")
+
+# Gemini in us-central1
+vertexai.init(project=PROJECT_ID, location="us-central1")
+gemini_model = GenerativeModel("gemini-2.5-flash-lite-preview-09-2025")
+
+# Claude in us-east5
+claude_client = AnthropicVertex(project_id=PROJECT_ID, region=CLAUDE_REGION)
+claude_id = "claude-opus-4-6"
+```
+
+### Claude's Evaluation:
+
+**Partially valid — useful reference, needs adaptation for Sentinel:**
+
+1. **Language mismatch**: Sentinel is TypeScript/Next.js. This Python code is a proof-of-concept, not directly usable. Need to translate to TypeScript using `@google/genai` (or `@google-cloud/vertexai`) and `@anthropic-ai/sdk`.
+
+2. **Model ID concern**: `gemini-2.5-flash-lite-preview-09-2025` is a preview model that may be expired. The user originally mentioned "Gemini 2.5 Flash" (not Flash Lite). Need to verify the correct model ID. Similarly, `claude-opus-4-6` needs verification for Vertex AI availability.
+
+3. **Region handling is correct**: Gemini and Claude live in different Vertex AI regions — this is accurately captured and important.
+
+4. **Three-agent architecture incomplete**: Only 2 agents shown. The third (GPT-5.2 Pro) already exists in Sentinel for synthesis. Need to define the orchestration: Gemini extracts -> Claude analyzes -> GPT synthesizes (or whatever the role assignment is).
+
+5. **Key addition — Claude Opus as third agent**: Previous architecture was Gemini (Reader) + GPT (Thinker). Adding Claude Opus creates a genuine three-agent system. Need to define Claude's specific role (e.g., "The Strategist" for portfolio-level insights? "The Auditor" for clause-level validation?).
+
+---

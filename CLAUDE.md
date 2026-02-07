@@ -82,3 +82,11 @@ Sentinel Demo is a Next.js lease analysis application using a three-agent AI pip
 - **Updated:** All 3 Gemini consumers to use shared client (gemini.ts, gemini-portfolio.ts, extract-lease/route.ts)
 - **GCP:** Vertex AI API enabled on project `gen-lang-client-0754692302`
 - **Service account key:** `service-account.json` in project root, gitignored
+
+### 2026-02-07 — Next Session: Demo Readiness (CEO Pitch)
+- **Goal:** Get Sentinel to CEO-pitch quality
+- **Priority 1 — Pre-bake fallback:** Cache known-good pipeline results; serve cached output if live calls fail or timeout
+- **Priority 2 — Harden Gemini JSON parsing:** ~50% failure rate on first parse is unacceptable for live demo; investigate stricter prompts, structured output mode, better post-processing
+- **Priority 3 — File size guard:** Reject PDFs over ~5MB with clear message; prevents event loop freeze from `unpdf` on large files
+- **Priority 4 — Reduce GPT synthesis time:** Currently ~173s; lower `reasoning.effort`, pre-compute for demo PDFs, or add streaming; target <60s
+- **Nia context ID:** `58f6ef95-6ea9-430e-ac8f-f4e280d175fb`
