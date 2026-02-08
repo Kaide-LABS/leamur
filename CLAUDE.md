@@ -112,7 +112,21 @@ Sentinel Demo is a Next.js lease analysis application using a three-agent AI pip
   - No file size guard (22MB+ PDFs can freeze unpdf)
   - Playwright accessibility tests still all fail (pre-existing)
 
+### 2026-02-07 (Session 2) — Cloud Run Deployment Setup (Partial)
+- **Added `output: 'standalone'`** to `next.config.ts` — required for containerized Next.js
+- **Created `Dockerfile`** — multi-stage build (deps → build → runtime) with `node:22-alpine`, runs as non-root `nextjs` user
+- **Created `.dockerignore`** — excludes node_modules, .next, .env*, service-account*.json, test artifacts
+- **Build verified locally** — standalone output generates correctly, all routes compile
+- **Deployment blocked on GCP auth:** `gcloud auth login` fails with `redirect_uri` / `invalid_request` OAuth error on this machine. Tried: `--no-launch-browser`, `--no-browser`, `gcloud init`, `application-default login` — all hit same OAuth redirect issue. Service account can't enable APIs (circular: needs Service Usage API which is also disabled).
+- **Recommended next step:** Use **Google Cloud Shell** (browser-based terminal at console.cloud.google.com) to:
+  1. Enable APIs: Cloud Run, Cloud Build, Artifact Registry
+  2. Deploy with: `gcloud run deploy sentinel-demo --source . --project gen-lang-client-0754692302 --region us-central1 --timeout=600 --memory=1Gi --allow-unauthenticated`
+  3. Set env vars via `--set-env-vars` (AWS keys, OpenAI key, Vertex AI config)
+- **Alternative:** Fix local gcloud by reinstalling (`brew reinstall google-cloud-sdk`) or updating (`gcloud components update`)
+- **Files created/modified:** `sentinel-demo/next.config.ts`, `sentinel-demo/Dockerfile`, `sentinel-demo/.dockerignore`
+
 ### Next Session Priorities
-- **Priority 1 — Pre-bake cache:** Serve instant cached results for known demo PDFs with simulated loading
-- **Priority 2 — File size guard:** Reject PDFs >5MB before unpdf processing
-- **Priority 3 — GPT speed:** Investigate streaming or switching to a faster model for synthesis
+- **Priority 1 — Complete Cloud Run deployment:** Authenticate via Cloud Shell or fix local gcloud, enable APIs, deploy
+- **Priority 2 — Pre-bake cache:** Serve instant cached results for known demo PDFs with simulated loading
+- **Priority 3 — File size guard:** Reject PDFs >5MB before unpdf processing
+- **Priority 4 — GPT speed:** Investigate streaming or switching to a faster model for synthesis
