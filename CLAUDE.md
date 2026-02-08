@@ -125,8 +125,17 @@ Sentinel Demo is a Next.js lease analysis application using a three-agent AI pip
 - **Alternative:** Fix local gcloud by reinstalling (`brew reinstall google-cloud-sdk`) or updating (`gcloud components update`)
 - **Files created/modified:** `sentinel-demo/next.config.ts`, `sentinel-demo/Dockerfile`, `sentinel-demo/.dockerignore`
 
+### 2026-02-08 — Cloud Run Deployment Complete
+- **Created `deploy-cloudrun.sh`:** 7-phase deployment script for Cloud Shell (validate prereqs, enable APIs, IAM, clone repo, collect secrets, deploy, verify)
+- **Cloud Run settings:** `us-central1`, 600s timeout, 1Gi memory, 1 CPU, 0-3 instances, unauthenticated
+- **Fixed `.env.example`:** `GOOGLE_CLOUD_LOCATION` → `global`, `AWS_REGION` → `us-east-1`, commented out `GOOGLE_APPLICATION_CREDENTIALS` (local-dev only), added AWS key placeholders
+- **Fixed `.gitignore`:** Added `!.env.example` exception so the file is tracked
+- **Deployed successfully via Cloud Shell:** App is live on Cloud Run
+- **Service URL:** Check with `gcloud run services describe sentinel-demo --region us-central1 --format="value(status.url)"`
+- **Redeploy command (from Cloud Shell):** `cd ~/leamur/sentinel-demo && git pull && gcloud run deploy sentinel-demo --source . --region us-central1 --quiet`
+
 ### Next Session Priorities
-- **Priority 1 — Complete Cloud Run deployment:** Authenticate via Cloud Shell or fix local gcloud, enable APIs, deploy
-- **Priority 2 — Pre-bake cache:** Serve instant cached results for known demo PDFs with simulated loading
-- **Priority 3 — File size guard:** Reject PDFs >5MB before unpdf processing
-- **Priority 4 — GPT speed:** Investigate streaming or switching to a faster model for synthesis
+- **Priority 1 — Pre-bake cache:** Serve instant cached results for known demo PDFs with simulated loading
+- **Priority 2 — File size guard:** Reject PDFs >5MB before unpdf processing
+- **Priority 3 — GPT speed:** Investigate streaming or switching to a faster model for synthesis
+- **Priority 4 — Custom domain:** Map a domain to the Cloud Run service if needed for demo
