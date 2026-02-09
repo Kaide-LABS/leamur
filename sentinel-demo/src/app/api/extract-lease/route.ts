@@ -4,6 +4,7 @@ import { getGeminiClient, GEMINI_MODEL } from '@/lib/ai/gemini-client';
 import { EXTRACTION_SYSTEM_PROMPT, EXTRACTION_USER_PROMPT } from '@/lib/ai/prompts-extraction';
 import { EXTRACTION_JSON_SCHEMA } from '@/lib/ai/schema-extraction';
 import type { LeaseExtraction } from '@/lib/types-extraction';
+import { calculateRiskScore } from '@/lib/ai/calculate-risk-score';
 
 // In-memory cache for extraction results (avoids redundant API calls during testing)
 const extractionCache = new Map<string, LeaseExtraction>();
@@ -222,10 +223,10 @@ export async function POST(request: NextRequest) {
     extraction.filename = file.name;
     extraction.extraction_timestamp = new Date().toISOString();
 
-    if (extraction.risk_score > 95) {
-      extraction.risk_score = 95;
-      extraction.risk_calculation_logic += ' → capped at 95';
-    }
+    // Override LLM risk score with deterministic calculation
+    const riskResult = calculateRiskScore(extraction);
+    extraction.risk_score = riskResult.score;
+    extraction.risk_calculation_logic = riskResult.logic;
 
     console.log(`[extract-lease] Extracted ${file.name}: risk=${extraction.risk_score}, confidence=${extraction.overall_confidence}`);
 

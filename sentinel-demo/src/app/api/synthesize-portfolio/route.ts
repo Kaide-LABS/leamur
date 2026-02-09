@@ -91,6 +91,29 @@ export async function POST(request: NextRequest) {
         analysis.insights = analysis.insights.slice(0, 7);
       }
 
+      // Recalculate portfolio risk score deterministically from lease data
+      const totalWeightedRisk = analysis.leases.reduce(
+        (sum, l) => sum + l.annualRent * l.riskScore, 0
+      );
+      const totalRent = analysis.leases.reduce(
+        (sum, l) => sum + l.annualRent, 0
+      );
+      if (totalRent > 0) {
+        analysis.exposureAggregation.portfolioRiskScore =
+          Math.round((totalWeightedRisk / totalRent) * 100) / 100;
+      }
+
+      // Recalculate risk level counts from lease data
+      analysis.exposureAggregation.highRiskCount = analysis.leases.filter(
+        (l) => l.riskLevel === 'high'
+      ).length;
+      analysis.exposureAggregation.mediumRiskCount = analysis.leases.filter(
+        (l) => l.riskLevel === 'medium'
+      ).length;
+      analysis.exposureAggregation.lowRiskCount = analysis.leases.filter(
+        (l) => l.riskLevel === 'low'
+      ).length;
+
       console.log(`[synthesize-portfolio] Generated ${analysis.insights.length} insights, portfolio risk: ${analysis.exposureAggregation.portfolioRiskScore}`);
     } catch (parseError) {
       console.error('[synthesize-portfolio] Failed to parse OpenAI response:', parseError);

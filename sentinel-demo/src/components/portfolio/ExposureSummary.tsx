@@ -71,7 +71,7 @@ export function ExposureSummary({ exposure }: ExposureSummaryProps) {
       <MetricCard
         icon={AlertTriangle}
         label="Portfolio Risk"
-        value={`${exposure.portfolioRiskScore}/100`}
+        value={`${Math.round(exposure.portfolioRiskScore)}/100`}
         subValue={`${exposure.highRiskCount} high risk, ${exposure.mediumRiskCount} medium`}
         iconColor={cn(
           exposure.portfolioRiskScore >= 70

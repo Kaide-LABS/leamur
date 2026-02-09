@@ -87,7 +87,7 @@ export function LeaseCard({ lease, isHighlighted, onClick }: LeaseCardProps) {
               riskColors[lease.riskLevel]
             )}
           >
-            {lease.riskScore}/100
+            {Math.round(lease.riskScore)}/100
           </p>
         </div>
       </div>
