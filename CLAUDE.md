@@ -134,8 +134,21 @@ Sentinel Demo is a Next.js lease analysis application using a three-agent AI pip
 - **Service URL:** Check with `gcloud run services describe sentinel-demo --region us-central1 --format="value(status.url)"`
 - **Redeploy command (from Cloud Shell):** `cd ~/leamur/sentinel-demo && git pull && gcloud run deploy sentinel-demo --source . --region us-central1 --quiet`
 
+### 2026-02-09 — Deterministic Risk Scoring (Partial) + Display Fix
+- **Fixed display bug:** Portfolio risk score and individual lease risk scores now render with `Math.round()` — no more raw floats like `88.2867/100`
+  - `ExposureSummary.tsx:74`, `LeaseCard.tsx:90`
+- **Created deterministic risk score calculator:** `src/lib/ai/calculate-risk-score.ts`
+  - Pure function with additive formula: Base 50, +25 no break, +15 turnover rent, +10 uncapped SC, +10 upward-only review, +10 high-risk repair, +5 no pandemic, +5 restrictive alienation, cap 95
+  - Returns both numeric score and human-readable logic string
+- **Wired calculator into extract-lease route:** Overrides Gemini's LLM-generated `risk_score` after extraction
+- **Added deterministic portfolio risk in synthesis route:** Recalculates rent-weighted average and risk level counts server-side after GPT response
+- **Deployed to Cloud Run** (redeploy command needs `--project gen-lang-client-0754692302` flag)
+- **STILL NON-DETERMINISTIC:** The calculator itself is deterministic, but Gemini returns **different extracted clauses/fields on each run** (e.g., sometimes detects a pandemic clause, sometimes doesn't; sometimes flags repair as high-risk, sometimes medium). The calculator receives different inputs → different outputs.
+- **Root cause:** Non-determinism is in Gemini's extraction (Agent 1), not in the scoring math. Even at temperature 0.1, Gemini produces variable clause classifications and field presence.
+- **Likely fix:** Pre-bake cached results for demo PDFs. This is the only reliable way to get identical scores across runs, since LLM extraction is inherently non-deterministic.
+
 ### Next Session Priorities
-- **Priority 1 — Pre-bake cache:** Serve instant cached results for known demo PDFs with simulated loading
+- **Priority 1 (CRITICAL) — Pre-bake cache for demo PDFs:** The ONLY reliable fix for deterministic demo results. Cache full extraction results for known demo PDFs and serve them instantly with simulated loading delays. This also eliminates the ~4 min pipeline wait during demo.
 - **Priority 2 — File size guard:** Reject PDFs >5MB before unpdf processing
 - **Priority 3 — GPT speed:** Investigate streaming or switching to a faster model for synthesis
 - **Priority 4 — Custom domain:** Map a domain to the Cloud Run service if needed for demo
